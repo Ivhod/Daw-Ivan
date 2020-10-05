@@ -7,24 +7,24 @@ public class Banco {
 		
 	    System.out.print(" Introducir los intereses del banco ");
 	    
-	    double interesaño = input.nextDouble();
+	    double interesaÃ±o = input.nextDouble();
 	    
-	    double interesmensual = interesaño / 1200;
+	    double interesmensual = interesaÃ±o / 1200;
 	    
-	    System.out.print(" Introducimos el numero de años ");
+	    System.out.print(" Introducimos el numero de aÃ±os ");
 	    
-	    int numeroaños = input.nextInt();
+	    int numeroaÃ±os = input.nextInt();
 	    
-	    // Enter loan amount
+	   
 	    System.out.print("Introduce cuanto tienes que pagar");
 	    double dinerobanco = input.nextDouble();
 	    
-	    // Calculate payment
-	    double mensualpagado = dinerobanco * interesmensual / (1 - 1 / Math.pow(1 + interesmensual, numeroaños * 12));
 	    
-	    double totalpagado = mensualpagado * numeroaños * 12;
+	    double mensualpagado = dinerobanco * interesmensual / (1 - 1 / Math.pow(1 + interesmensual, numeroaÃ±os * 12));
+	    
+	    double totalpagado = mensualpagado * numeroaÃ±os * 12;
 
-	    // Display results
+	    
 	    System.out.println(" El pago mensual es $ " + 
 	      (int)(mensualpagado * 100) / 100.0);
 	    System.out.println("Total pagado es $ " + 
