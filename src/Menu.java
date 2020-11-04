@@ -47,7 +47,7 @@ public class Menu {
 				System.out.println(numero + " = " + hexadecimal(numero));
 
 			}
-		} while (op != 5); // Esto es para saber que solo hay 5 opciones si queremos mas opciones cambiamos el valor y añadimos mas casos en el switch
+		} while (op != 5); // Esto es para saber que solo hay 5 opciones si queremos mas opciones cambiamos el valor y aÃ±adimos mas casos en el switch
 	}
 	public static String hexadecimal(int decimal) { 		//Esto es cada ejercicio basicamente meter los anteriores ejercicios que hemos echo en diferentes metodos
 		String hex = "";
@@ -91,7 +91,7 @@ public class Menu {
 
 		while (divisor < (numero / 2) && (numero % divisor != 0))
 			divisor++;
-		if (numero % divisor != 0 || numero == 2) 
+		if (numero % divisor != 0 || numero == 2) 			//Esto es lo mismo que poner else y la condicion
 			return true;
 		return false;
 	}
