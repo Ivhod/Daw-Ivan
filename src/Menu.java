@@ -4,10 +4,10 @@ public class Menu {
 
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-
-		int op;
+		int op = 0;
 		int numero;
 		int numero1;
+		
 		Scanner input = new Scanner(System.in);
 
 		do {		// Esto es un do while para el menu con cada opcion del menu
@@ -45,9 +45,21 @@ public class Menu {
 				numero = input.nextInt();
 
 				System.out.println(numero + " = " + hexadecimal(numero));
+			case 5:
+				System.out.println("Introduce un numero Hexadecimal para pasarlo a decimal");
+				String hex = input.next();
+				
+				System.out.println(hex + " = " + decimalhex(hex));
 
 			}
-		} while (op != 5); // Esto es para saber que solo hay 5 opciones si queremos mas opciones cambiamos el valor y aÃ±adimos mas casos en el switch
+		} while (op != 6); // Esto es para saber que solo hay 5 opciones si queremos mas opciones cambiamos el valor y añadimos mas casos en el switch
+	}
+	public static int decimalhex (String hex) {
+		int decimal;
+		hex.length();
+		
+		decimal = 0 + hex*Math.pow(16, 2)-i;
+		
 	}
 	public static String hexadecimal(int decimal) { 		//Esto es cada ejercicio basicamente meter los anteriores ejercicios que hemos echo en diferentes metodos
 		String hex = "";
@@ -91,8 +103,8 @@ public class Menu {
 
 		while (divisor < (numero / 2) && (numero % divisor != 0))
 			divisor++;
-		if (numero % divisor != 0 || numero == 2) 			//Esto es lo mismo que poner else y la condicion
-			return true;
+		if (numero % divisor != 0 || numero == 2) 
+			return true;								//Esto es lo mismo que poner else y la condicion
 		return false;
 	}
 
@@ -104,11 +116,10 @@ public class Menu {
 		System.out.println(" 2-Es par o impar ");
 		System.out.println(" 3-Minimo Comun Divisor ");
 		System.out.println(" 4-Decimal a Hexadecimal");
-		System.out.println(" 5-Exit ");
+		System.out.println(" 5-Hexadecimal a Decimal ");
+		System.out.println(" 6-Exit ");
 
 		opciones = input.nextInt();
 		return opciones;
-
 	}
-
 }
