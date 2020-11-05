@@ -55,10 +55,25 @@ public class Menu {
 		} while (op != 6); // Esto es para saber que solo hay 5 opciones si queremos mas opciones cambiamos el valor y añadimos mas casos en el switch
 	}
 	public static int decimalhex (String hex) {
-		int decimal;
+		int decimal= 0;
 		hex.length();
+		int high = hex.length()-1;
+		for (int i = 0; i <= high; i++) {
+			char caracter = hex.charAt(i);
+			int digit;
+			
+			if (caracter >= '0' && caracter <= '9')
+				digit = caracter - 'A' + 10;
+			else if (caracter >= 'A' && caracter <= 'F')
+				digit = caracter = 'A' + 10;
+			else
+				return 0;
+			
+			decimal += digit*Math.pow(16, high-i);
+		}
+		return decimal;
 		
-		decimal = 0 + hex*Math.pow(16, 2)-i;
+		
 		
 	}
 	public static String hexadecimal(int decimal) { 		//Esto es cada ejercicio basicamente meter los anteriores ejercicios que hemos echo en diferentes metodos
