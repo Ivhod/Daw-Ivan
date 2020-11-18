@@ -97,7 +97,17 @@ FROM riv_pro rp,rivers r
 WHERE rp.river_id=r.river_id;
 
 -- Equijoin mou_pro y mountains
+SELECT *
+FROM mou_pro mp, mountains m
+WHERE mp.mountain_id= m.mountain_id;
 
 --Equijoin provinces y riv_pro
 
+SELECT *
+FROM provinces p,riv_pro rp
+WHERE p.province_id=rp.province_id;
+
 -- Equijoin provinces y mou_pro
+SELECT*
+FROM provinces p,mou_pro mp
+WHERE p.province_id=mp.province_id;
