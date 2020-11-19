@@ -111,3 +111,49 @@ WHERE p.province_id=rp.province_id;
 SELECT*
 FROM provinces p,mou_pro mp
 WHERE p.province_id=mp.province_id;
+
+-- Equijoin de provinces, riv_pro y rivers
+
+SELECT *
+FROM provinces p, riv_pro rp, rivers r
+WHERE p.province_id=rp.province_id
+AND rp.river_id=r.river_id;
+
+-- Equijoin de provinces, mou_pro y mountains
+
+SELECT *
+FROM provinces p, mou_pro mp, mountains m
+WHERE p.province_id=mp.province_id
+AND mp.mountain_id=m.mountain_id;
+
+-- La clausula ORDER BY ordena las filas
+
+-- Las provincias por orden alfabético
+
+SELECT *
+FROM provinces 
+ORDER BY name;
+
+-- Lo mismo en orden descendente
+
+SELECT *
+FROM provinces 
+ORDER BY name DESC;
+
+-- Cuando hay valores repetidos en un campo de ordenación,
+-- se puede indicar una segunda columna, y una tercera, etc.
+
+-- Nombres de regiones y nombres de provincias ordenados
+
+SELECT r.name, p.name
+FROM regions r, provinces p
+WHERE r.region_id=p.region_id
+ORDER BY r.name, p.name;
+
+-- También podemos sustituir los nombres de columnas por 
+-- números de orden
+
+SELECT r.name, p.name
+FROM regions r, provinces p
+WHERE r.region_id=p.region_id
+ORDER BY 1,2;
