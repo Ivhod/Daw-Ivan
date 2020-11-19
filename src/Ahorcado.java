@@ -22,7 +22,7 @@ public class Ahorcado {
 		int letrasPalabras = palabra.length(); // letras de la palabra oculta
 		char[] guiones = new char[letrasPalabras];
 
-		for (int i = 0; i < guiones.length; i++) {
+		for (int i = 0; i < guiones.length; i++) { //Para que ponga guiones por el tamaño de la palabra
 			guiones[i] = '_';
 		}
 		return guiones;
