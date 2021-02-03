@@ -1,0 +1,1236 @@
+-- 1. Todos los datos de clientes sin facturas
+
+SELECT *
+FROM customers
+WHERE customer_id NOT IN (
+	SELECT customer_id
+	FROM invoices
+);
+
+-- 2. Todos los datos de vehículos sin facturas
+
+SELECT *
+FROM vehicles
+WHERE vehicle_id NOT IN (
+	SELECT vehicle_id
+	FROM invoices
+);
+
+-- 3. Suma de horas trabajadas por Rosa
+
+SELECT SUM(hours)
+FROM items_work
+WHERE mechanic_id = (
+	SELECT mechanic_id
+	FROM mechanics
+	WHERE name LIKE '%Rosa%'
+);
+
+-- 4. Suma de importe del producto Battery EXT55
+
+SELECT SUM(units*price)
+FROM items_part
+WHERE part_id = (
+	SELECT part_id
+	FROM parts
+	WHERE description='Battery EXT55'
+);
+
+-- 5. Facturas que sólo tengan mano de obra (sin piezas)
+
+SELECT * 
+FROM invoices
+WHERE invoice_id IN (
+	SELECT invoice_id
+	FROM items_work
+)
+AND invoice_id NOT IN (
+	SELECT invoice_id
+	FROM items_part
+);
+
+-- 6. Facturas que sólo tengan piezas (sin mano de obra)
+
+SELECT * 
+FROM invoices
+WHERE invoice_id NOT IN (
+	SELECT invoice_id
+	FROM items_work
+)
+AND invoice_id IN (
+	SELECT invoice_id
+	FROM items_part
+);
+
+-- 7. Facturas que tengan tanto piezas como mano de obra
+
+SELECT * 
+FROM invoices
+WHERE invoice_id IN (
+	SELECT invoice_id
+	FROM items_work
+)
+AND invoice_id IN (
+	SELECT invoice_id
+	FROM items_part
+);
+
+-- 8. Piezas que no se hayan vendido nunca
+
+SELECT *
+FROM parts
+WHERE part_id NOT IN (
+	SELECT part_id
+	FROM items_part
+);
+
+-- 9. Número de facturas de Francesca Renatti 
+
+SELECT COUNT(*)
+FROM invoices
+WHERE customer_id = (
+	SELECT customer_id
+	FROM customers
+	WHERE name='Renatti, Francesca'
+);
+
+-- 10. Suma de importe de piezas las facturas de 'Sakata, Koji' 
+
+SELECT SUM(units*price)
+FROM items_part
+WHERE invoice_id IN (
+	SELECT invoice_id
+	FROM invoices
+	WHERE customer_id = (
+		SELECT customer_id
+		FROM customers
+		WHERE name='Sakata, Koji'
+	)
+);
+
+-- 11. Suma de importe de mano de obra de Francesca Renatti
+
+SELECT SUM(hours*i.price_hour)
+FROM items_work iw, invoices i
+WHERE iw.invoice_id=i.invoice_id
+AND customer_id = (
+	SELECT customer_id
+	FROM customers
+	WHERE name='Renatti, Francesca'
+);
+
+-- 12. Número de ítems de mano de obra del vehículo 5445BBF
+
+SELECT COUNT(*)
+FROM items_work
+WHERE invoice_id IN (
+	SELECT invoice_id
+	FROM invoices
+	WHERE vehicle_id='5445BBF'
+);
+
+-- 13. Todos los datos de piezas vendidas a vehículos Renault
+
+SELECT *
+FROM parts
+WHERE part_id IN (
+	SELECT part_id
+	FROM items_part
+	WHERE invoice_id IN (
+		SELECT invoice_id
+		FROM invoices
+		WHERE vehicle_id IN (
+			SELECT vehicle_id
+			FROM vehicles
+			WHERE brand='Renault'
+		)
+	)
+);
+
+-- La clausula HAVING es a los grupos lo mismo
+-- que la clausula WHERE es a las filas.
+-- Es decir, pone condiciones a los grupos.
+-- Las condiones se establecen sobre funciones de agregados.
+
+-- 14. Identificadores de clientes con más de una factura
+
+SELECT customer_id, COUNT(*)
+FROM invoices
+GROUP BY customer_id
+HAVING COUNT(*)>1;
+
+-- 15. Identificadores de piezas con suma de unidades vendidas
+-- mayor que 4
+
+SELECT part_id, SUM(units)
+FROM items_part
+GROUP BY part_id
+HAVING SUM(units)>4;
+
+-- 16. Identificadores de mecánicos con suma de horas mayor que 5
+
+SELECT mechanic_id, SUM(hours)
+FROM items_work
+GROUP BY mechanic_id
+HAVING SUM(hours)>5;
+
+-- 17. Identificadores de mecánicos con suma de horas
+-- superior a la suma de Michael Kurtiss
+
+SELECT mechanic_id, SUM(hours)
+FROM items_work
+GROUP BY mechanic_id
+HAVING SUM(hours)>(
+	SELECT SUM(hours)
+	FROM items_work
+	WHERE mechanic_id=(
+		SELECT mechanic_id
+		FROM mechanics
+		WHERE name='Kurtiss, Michael'
+	)
+);
+
+-- El operador ALL se utiliza con los operadores > < >= <=
+-- Se compara el valor de la izquierda con todos los valores de la derecha
+
+-- 18. Todos los datos del mecánico que más horas trabajada
+
+SELECT m.mechanic_id, m.name, m.phone, SUM(i.hours)
+FROM mechanics m, items_work i
+WHERE m.mechanic_id=i.mechanic_id
+GROUP BY m.mechanic_id, m.name, m.phone
+HAVING SUM(i.hours)>= ALL (
+	SELECT SUM(hours)
+	FROM items_work
+	GROUP BY mechanic_id
+);
+
+-- 19. Todos los datos de la pieza con más suma de unidades vendidas
+
+SELECT p.part_id, p.description, p.price, SUM(i.units)
+FROM parts p, items_part i
+WHERE p.part_id=i.part_id
+GROUP BY p.part_id, p.description, p.price
+HAVING SUM(i.units)>= ALL (
+	SELECT SUM(units)
+	FROM items_part
+	GROUP BY part_id
+);
+
+-- 20. Todos los datos del cliente con más facturas
+
+SELECT c.customer_id, c.name, COUNT(*)
+FROM customers c, invoices v
+WHERE c.customer_id=v.customer_id
+GROUP BY  c.customer_id, c.name
+HAVING COUNT(*) >= ALL (
+	SELECT COUNT(*)
+	FROM invoices
+	GROUP BY customer_id
+);
+
+-- 21. Todos los datos del vehículo con más facturas
+
+SELECT v.vehicle_id, v.brand, v.model, COUNT(*)
+FROM vehicles v, invoices i
+WHERE v.vehicle_id=i.vehicle_id
+GROUP BY v.vehicle_id, v.brand, v.model
+HAVING COUNT(*) >= ALL (
+	SELECT COUNT(*)
+	FROM invoices
+	GROUP BY vehicle_id
+);
+
+-- 22. Todos los datos de la marca de vehículos con más facturas
+
+SELECT v.brand, COUNT(*)
+FROM vehicles v, invoices i
+WHERE v.vehicle_id=i.vehicle_id
+GROUP BY v.brand
+HAVING COUNT(*) >= ALL (
+	SELECT COUNT(*)
+	FROM vehicles v, invoices i
+	WHERE v.vehicle_id=i.vehicle_id
+	GROUP BY v.brand
+);
+
+-- 23. Todos los datos del cliente con más ítems de mano de obra
+-- Se mostrará además el número de facturas
+
+SELECT c.*, COUNT(DISTINCT i.invoice_id) AS num_invoices, COUNT(*) AS num_items
+FROM customers c, invoices i, items_work iw
+WHERE c.customer_id=i.customer_id AND i.invoice_id=iw.invoice_id
+GROUP BY c.customer_id, c.name, c.email, c.city
+HAVING COUNT(*) >= ALL (
+	SELECT COUNT(*)
+	FROM invoices i, items_work iw
+	WHERE i.invoice_id=iw.invoice_id
+	GROUP BY i.customer_id
+);
+
+-- 1. Todos los datos de las provincias de Andalucía
+
+SELECT *
+FROM provinces
+WHERE region_id=(
+	SELECT region_id
+	FROM regions
+	WHERE name='Andalucía'
+);
+
+-- 2. Todos los datos de las provincias por donde pasa el Guadalquivir
+
+SELECT *
+FROM provinces
+WHERE province_id IN (
+	SELECT province_id
+	FROM pro_riv
+	WHERE river_id=(
+		SELECT river_id
+		FROM rivers
+		WHERE name='Guadalquivir'
+	)
+);
+
+-- 3. Todos los datos de la provincia con más población
+
+SELECT *
+FROM provinces
+WHERE population=(
+	SELECT MAX(population)
+	FROM provinces
+);
+
+-- 4. Todos los datos de la provincia andaluza con más población
+
+SELECT *
+FROM provinces
+WHERE population=(
+	SELECT MAX(population)
+	FROM provinces
+	WHERE region_id=(
+		SELECT region_id
+		FROM regions
+		WHERE name='Andalucía'
+	)
+)
+AND region_id=(
+	SELECT region_id
+	FROM regions
+	WHERE name='Andalucía'
+);
+
+-- 5. Todos los datos de provincias aragonesas por las que pasa el Ebro
+
+SELECT *
+FROM provinces
+WHERE region_id=(
+	SELECT region_id
+	FROM regions
+	WHERE name='Aragón'
+)
+AND province_id IN (
+	SELECT province_id
+	FROM pro_riv
+	WHERE river_id=(
+		SELECT river_id
+		FROM rivers
+		WHERE name='Ebro'
+	)
+);
+
+-- 6. Todos los datos de provincias andaluzas con densidad
+-- superior a la media de España
+
+SELECT *
+FROM provinces
+WHERE region_id=(
+	SELECT region_id
+	FROM regions
+	WHERE name='Andalucía'
+)
+AND population/surface>(
+	SELECT AVG(population/surface)
+	FROM provinces
+);
+
+-- 7. Provincias de los Pirineos
+
+SELECT *
+FROM provinces
+WHERE province_id IN (
+	SELECT province_id
+	FROM pro_mou
+	WHERE mountain_id = (
+		SELECT mountain_id
+		FROM mountains
+		WHERE name='Pirineos'
+	)
+);
+
+-- 8. Provincias andaluzas atravesadas por el Sistema Penibético
+
+SELECT *
+FROM provinces
+WHERE region_id=(
+	SELECT region_id
+	FROM regions
+	WHERE name='Andalucía'
+)
+AND province_id IN (
+	SELECT province_id
+	FROM pro_mou
+	WHERE mountain_id = (
+		SELECT mountain_id
+		FROM mountains
+		WHERE name='Sistema Penibético'
+	)
+); 
+
+-- 9. Provincias Gallegas no atravesadas por el río Miño
+
+SELECT *
+FROM provinces
+WHERE region_id=(
+	SELECT region_id
+	FROM regions
+	WHERE name='Galicia'
+)
+AND province_id NOT IN (
+	SELECT province_id
+	FROM pro_riv
+	WHERE river_id = (
+		SELECT river_id
+		FROM rivers
+		WHERE name='Miño'
+	)
+);
+
+-- 10. Ríos más largos que el Guadiana
+
+SELECT *
+FROM rivers
+WHERE length > (
+	SELECT length
+	FROM rivers
+	WHERE name='Guadiana'
+);
+
+-- 11. Provincias con población superior a la población de Extremadura
+
+SELECT *
+FROM provinces
+WHERE population > (
+	SELECT SUM(population)
+	FROM provinces
+	WHERE region_id = (
+		SELECT region_id
+		FROM regions
+		WHERE name='Extremadura'
+	)
+);
+
+-- 12. Montañas con altura superior a la media
+
+SELECT *
+FROM mountains
+WHERE height > (
+	SELECT AVG(height)
+	FROM mountains
+);
+
+-- 13. Provincias con menos superficie que la mínima de la 
+-- superficie de las provincias catalanas
+
+SELECT *
+FROM provinces
+WHERE surface < (
+	SELECT MIN(surface)
+	FROM provinces
+	WHERE region_id = (
+		SELECT region_id
+		FROM regions
+		WHERE name='Cataluña'
+	)
+);
+
+-- 14. Región con mayor número de provincias
+
+SELECT r.*, COUNT(*)
+FROM regions r, provinces p
+WHERE r.region_id=p.region_id
+GROUP BY r.region_id, r.name
+HAVING COUNT(*) >= ALL (
+	SELECT COUNT(*)
+	FROM provinces
+	GROUP BY region_id
+);
+
+-- 15. Región con mayor población
+
+SELECT r.*, SUM(population)
+FROM regions r, provinces p
+WHERE r.region_id=p.region_id
+GROUP BY r.region_id, r.name
+HAVING SUM(population) >= ALL (
+	SELECT SUM(population)
+	FROM provinces
+	GROUP BY region_id
+);
+
+-- 16. Todos los datos de las provincias donde desemboca el Guadalquivir
+
+SELECT *
+FROM provinces
+WHERE province_id IN (
+	SELECT province_id
+	FROM pro_riv pr, rivers r
+	WHERE pr.river_id=r.river_id
+	AND r.name='Guadalquivir'
+	AND pr.river_order >= ALL (
+		SELECT pr.river_order
+		FROM pro_riv pr, rivers r
+		WHERE pr.river_id=r.river_id
+		AND r.name='Guadalquivir'
+	)
+);
+
+-- 17. Regiones con menor superficie que Andalucía
+
+SELECT *
+FROM regions
+WHERE region_id IN (
+	SELECT region_id
+	FROM provinces
+	GROUP BY region_id
+	HAVING SUM(surface) < (
+		SELECT SUM(surface)
+		FROM provinces
+		WHERE region_id = (
+			SELECT region_id
+			FROM regions
+			WHERE name='Andalucía'
+		)
+	)
+);
+
+-- 18. Lo mismo de antes pero que se vea la superficie de cada región
+
+SELECT r.region_id, r.name, SUM(surface)
+FROM regions r, provinces p
+WHERE r.region_id=p.region_id
+GROUP BY r.region_id, r.name
+HAVING SUM(surface) < (
+	SELECT SUM(surface)
+	FROM provinces
+	WHERE region_id = (
+		SELECT region_id
+		FROM regions
+		WHERE name='Andalucía'
+	)
+);
+	
+-- 19. Ríos que atraviesen menos provincias que el Gualdalquivir
+
+SELECT r.river_id, r.name, COUNT(*)
+FROM rivers r, pro_riv pr
+WHERE r.river_id=pr.river_id
+GROUP BY r.river_id, r.name
+HAVING COUNT(*) < (
+	SELECT COUNT(*)
+	FROM pro_riv
+	WHERE river_id = (
+		SELECT river_id
+		FROM rivers
+		WHERE name='Guadalquivir'
+	)
+);
+
+-- El orden de las clausulas es SELECT-FROM-WHERE-GROUP-HAVING
+
+-- 20. Para cada identificador de río, número de provincias andaluzas que atraviesa
+
+SELECT river_id, COUNT(*)
+FROM pro_riv
+WHERE province_id IN (
+	SELECT province_id
+	FROM provinces
+	WHERE region_id = (
+		SELECT region_id
+		FROM regions
+		WHERE name='Andalucía'
+	)
+)
+GROUP BY river_id;
+
+-- 21. Identificador del río que más provincias andaluzas atraviesa
+
+SELECT river_id, COUNT(*)
+FROM pro_riv
+WHERE province_id IN (
+	SELECT province_id
+	FROM provinces
+	WHERE region_id = (
+		SELECT region_id
+		FROM regions
+		WHERE name='Andalucía'
+	)
+)
+GROUP BY river_id
+HAVING COUNT(*) >= ALL (
+	SELECT COUNT(*)
+	FROM pro_riv
+	WHERE province_id IN (
+		SELECT province_id
+		FROM provinces
+		WHERE region_id = (
+			SELECT region_id
+			FROM regions
+			WHERE name='Andalucía'
+		)
+	)
+	GROUP BY river_id
+);
+
+-- Data Definition Language (DDL): CREATE
+-- Data Manipulation Language (DML): SELECT, INSERT, UPDATE, DELETE
+
+-- CREATE VIEW es un comando DDL que crea una vista con los datos de una consulta.
+-- Una vista es una tabla virtual que puede ser utilizada como una tabla real.
+-- Los datos de la vista se extraen de otras tablas o vistas.
+
+-- 22. Crear una vista con las provincias andaluzas
+
+CREATE VIEW and_provinces AS
+SELECT *
+FROM provinces
+WHERE region_id = (
+	SELECT region_id
+	FROM regions
+	WHERE name='Andalucía'
+);
+
+-- 23. Para cada identificador de río, número de provincias andaluzas que atraviesa
+
+SELECT river_id, COUNT(*)
+FROM pro_riv
+WHERE province_id IN (
+	SELECT province_id
+	FROM and_provinces
+)
+GROUP BY river_id;
+
+-- 24. Identificador del río que más provincias andaluzas atraviesa
+
+SELECT river_id, COUNT(*)
+FROM pro_riv
+WHERE province_id IN (
+	SELECT province_id
+	FROM and_provinces
+)
+GROUP BY river_id
+HAVING COUNT(*) >= ALL (
+	SELECT COUNT(*)
+	FROM pro_riv
+	WHERE province_id IN (
+		SELECT province_id
+		FROM and_provinces
+	)
+	GROUP BY river_id
+);
+-- 1. Todos los datos de los libros de Cervantes
+
+SELECT *
+FROM books
+WHERE book_id IN (
+	SELECT book_id
+	FROM boo_aut
+	WHERE author_id = (
+		SELECT author_id
+		FROM authors
+		WHERE name LIKE '%Cervantes%'
+	)
+);
+
+-- 2. Todos los datos de los libros que no traten de informática
+
+SELECT *
+FROM books
+WHERE book_id NOT IN (
+	SELECT book_id
+	FROM boo_the
+	WHERE theme_id = (
+		SELECT theme_id
+		FROM themes
+		WHERE name='Computing'
+	)
+);
+
+-- 2. Para cada identificador de libro, número de veces que se prestó
+
+SELECT c.book_id, COUNT(*) 
+FROM copies c, loans l
+WHERE c.copy_id=l.copy_id
+GROUP BY c.book_id;
+
+-- 3. Identificador del libro que más veces ha sido prestado
+
+SELECT c.book_id, COUNT(*) 
+FROM copies c, loans l
+WHERE c.copy_id=l.copy_id
+GROUP BY c.book_id
+HAVING COUNT(*) >= ALL (
+	SELECT COUNT(*) 
+	FROM copies c, loans l
+	WHERE c.copy_id=l.copy_id
+	GROUP BY c.book_id
+);
+
+-- 5. Todos los datos del socio que más préstamos hizo
+
+SELECT m.member_id, m.name, m.email, m.phone, COUNT(*)
+FROM members m, loans l
+WHERE m.member_id=l.member_id
+GROUP BY m.member_id, m.name, m.email, m.phone
+HAVING COUNT(*) >= ALL (
+	SELECT COUNT(*)
+	FROM loans
+	GROUP BY member_id
+);
+
+-- 6. Todos los datos del tema que más libros tiene
+
+SELECT t.theme_id, t.name, COUNT(*)
+FROM boo_the bt, themes t
+WHERE bt.theme_id=t.theme_id
+GROUP BY t.theme_id, t.name
+HAVING COUNT(*) >= ALL (
+	SELECT COUNT(*)
+	FROM boo_the
+	GROUP BY theme_id
+);
+
+-- 7. Duración en días de cada préstamo
+
+SELECT *, TIMESTAMPDIFF(DAY,init_date,end_date)
+FROM loans;
+
+-- La función IFNULL tiene dos parámetros:
+-- -- Valor1 que puede ser nulo o no
+-- -- Valor2 que devuelve si valor1 es nulo
+
+-- 8. Todos los datos de los préstamos junto con una 
+-- columna que indique se está devuelto o no
+
+SELECT *, IFNULL(end_date,'No devuelto') AS micolumna
+FROM loans;
+
+-- 9. Duración en días de cada préstamo tomando la fecha actual para
+-- los préstamos no devueltos
+
+SELECT *, TIMESTAMPDIFF(DAY,init_date,IFNULL(end_date,CURRENT_DATE()))
+FROM loans;
+
+-- La función IF tiene tres parámetros:
+-- -- Condición, donde se pueden usar columnas y operadores relacionales y lógicos
+-- -- Valor devuelto si la condición es verdadera
+-- -- Valor devuelto si la condición es falsa
+
+-- 10. A la consulta anterior le añadimos una columna que indique si el préstamo
+-- está devuelto o pendiente de devolución
+
+SELECT *, TIMESTAMPDIFF(DAY,init_date,IFNULL(end_date,CURRENT_DATE())) AS dias,
+IF(end_date IS NULL,'Pendiente','Devuelto') AS estado
+FROM loans;
+
+-- 11. Todos los datos de los libros junto con una columna que muestre lo siguiente:
+-- -- 'Muy corto' para páginas menor que 100
+-- -- 'Corto' para páginas menor que 200
+-- -- 'Medio' para páginas menor que 300
+-- -- 'Largo' para páginas menor que 400
+-- -- 'Muy largo' para el resto
+
+SELECT *, IF(pages<100,'Muy corto',
+			IF(pages<200,'Corto',
+				IF(pages<300,'Medio',
+					IF(pages<400,'Largo','Muy largo')))) AS longitud
+FROM books;
+
+-- 12. Todos los datos de libros de informática que no se hayan prestado nunca
+
+SELECT * 
+FROM books
+WHERE book_id IN (
+	SELECT book_id
+	FROM boo_the
+	WHERE theme_id = (
+		SELECT theme_id
+		FROM themes
+		WHERE name='Computing'
+	)
+)
+AND book_id NOT IN (
+	SELECT book_id
+	FROM copies
+	WHERE copy_id IN (
+		SELECT copy_id
+		FROM loans
+	)
+);
+
+-- Funciones de fecha-hora:
+-- HOUR(fecha)
+-- MINUTE(fecha)
+-- DAY(fecha)
+-- MONTH(fecha)
+-- YEAR(fecha)
+
+-- 13. Todos los datos de los préstamos junto con la estación del año en que se hicieron
+
+SELECT *, 
+	IF(MONTH(init_date)=12 AND DAY(int_date)>=21 
+	OR MONTH(init_date) IN (1,2)
+	OR MONTH(init_date)=3 AND DAY(init_date)<=20,'Invierno',
+		IF (MONTH(init_date)=3 AND DAY(init_date)>=21
+		OR MONTH(init_date) IN (4,5)
+		OR MONTH(init_date)=6 AND DAY(init_date)<=20,'Primavera',
+			IF (MONTH(init_date)=6 AND DAY(init_date)>=21
+			OR MONTH(init_date) IN (7,8)
+			OR MONTH(init_date)=9 AND DAY(init_date)<=20,'Verano','Otoño'))) AS estacion
+FROM loans;
+			
+-- 14. Todos los datos de las copias de libros de Cervantes
+
+SELECT *
+FROM copies
+WHERE book_id IN (
+	SELECT book_id
+	FROM boo_aut
+	WHERE author_id = (
+		SELECT author_id
+		FROM authors
+		WHERE name LIKE '%Cervantes Saavedra%'
+	)
+);
+
+-- 15. Todos los datos de las copias de libros de bases de datos
+
+
+-- Subconsultas en la clausula WHERE
+-- Permitem establecer una condición usando datos de otra tabla
+-- sin necesidad de hacer equijoin.
+-- Los datos de la subconsulta pueden ser una fila o un conjunto
+-- de filas.
+
+-- 1. Todas las películas de Paramount Pictures
+
+SELECT m.*
+FROM movies m, studios s
+WHERE m.studio_id=s.studio_id
+AND s.name='Paramount pictures';
+
+-- 2. Lo mismo mediante una subconsulta que devuelve una fila
+
+SELECT * 
+FROM movies
+WHERE studio_id=(
+	SELECT studio_id
+	FROM studios
+	WHERE name='Paramount pictures'
+);
+
+-- 3. Todas las películas dirigidas por Clint Eastwood
+
+SELECT m.*
+FROM movies m, artists a
+WHERE m.director_id=a.artist_id
+AND a.name='Clint Eastwood';
+
+-- 4. Lo mismo mediante una subconsulta que devuelve una fila
+
+SELECT *
+FROM movies
+WHERE director_id=(
+	SELECT artist_id
+	FROM artists
+	WHERE name='Clint Eastwood'
+);
+
+-- 5. Identificadores de las películas donde actúa Al Pacino
+
+SELECT movie_id
+FROM art_mov
+WHERE artist_id=(
+	SELECT artist_id
+	FROM artists
+	WHERE name='Al Pacino'
+);
+
+-- 6. Todos los datos de las películas donde actúa Al Pacino
+
+SELECT *
+FROM movies
+WHERE movie_id IN (
+	SELECT movie_id
+	FROM art_mov
+	WHERE artist_id=(
+		SELECT artist_id
+		FROM artists
+		WHERE name='Al Pacino'
+	)
+);
+
+-- Cuando la subconsulta devuelve varias filas no se puede usar
+-- el operador = y se usa en su lugar el operador IN
+
+-- 7. Todos los datos del director de Million dollar baby
+
+SELECT *
+FROM artists
+WHERE artist_id = (
+	SELECT director_id
+	FROM movies
+	WHERE title='Million dollar baby'
+);
+
+-- 8. Todos los datos de los actores de Million dollar baby
+
+SELECT *
+FROM artists
+WHERE artist_id IN (
+	SELECT artist_id
+	FROM art_mov
+	WHERE movie_id = (
+		SELECT movie_id
+		FROM movies
+		WHERE title='Million dollar baby'
+	)
+);
+
+-- 9. Todos los datos de los estudios para los que haya actuado Robert de Niro
+
+SELECT *
+FROM studios
+WHERE studio_id IN (
+	SELECT studio_id
+	FROM movies
+	WHERE movie_id IN (
+		SELECT movie_id
+		FROM art_mov
+		WHERE artist_id = (
+			SELECT artist_id
+			FROM artists
+			WHERE name='Robert de Niro'
+		)
+	)
+);
+
+-- 10. Todos los datos de la película más antigua
+
+SELECT *
+FROM movies
+WHERE release_year=(
+	SELECT MIN(release_year)
+	FROM movies
+);
+
+-- 11. Todos los datos del artista más joven
+
+SELECT *
+FROM artists
+WHERE born_date=(
+	SELECT MAX(born_date)
+	FROM artists
+);
+
+-- 12. Todos los datos de la película más antigua usando ALL
+
+SELECT *
+FROM movies
+WHERE release_year <= ALL (
+	SELECT release_year
+	FROM movies
+);
+
+-- 13. Todos los datos del artista más joven usando ALL
+
+SELECT *
+FROM artists
+WHERE born_date >= ALL (
+	SELECT born_date
+	FROM artists
+);
+
+-- 14. Artistas que no actuaron en 'The Godfather I' ni en 'The Godfather II'
+
+SELECT *
+FROM artists
+WHERE artist_id NOT IN (
+	SELECT artist_id
+	FROM art_mov
+	WHERE movie_id IN (
+		SELECT movie_id
+		FROM movies
+		WHERE title IN ('The Godfather I','The Godfather II')
+	)
+);
+
+-- 15. Años entre la primera y la última película donde actúa Al Pacino
+
+SELECT MAX(release_year)-MIN(release_year)
+FROM movies
+WHERE movie_id IN (
+	SELECT movie_id
+	FROM art_mov
+	WHERE artist_id = (
+		SELECT artist_id
+		FROM artists
+		WHERE name='Al Pacino'
+	)
+);
+
+-- 16. Identificador del estudio con más películas
+
+SELECT studio_id, COUNT(*)
+FROM movies
+GROUP BY studio_id
+HAVING COUNT(*) >= ALL (
+	SELECT COUNT(*)
+	FROM movies
+	GROUP BY studio_id
+);
+
+-- 17. Todos los datos del estudio con más películas
+
+SELECT s.*, COUNT(*)
+FROM studios s, movies m
+WHERE s.studio_id=m.studio_is
+GROUP BY s.studio_id, s.name, s.fund_year
+HAVING COUNT(*) >= ALL (
+	SELECT COUNT(*)
+	FROM movies
+	GROUP BY studio_id
+);
+
+-- 18. Identificador del artista que actuó en más películas
+
+SELECT artist_id, COUNT(*)
+FROM art_mov
+GROUP BY  artist_id
+HAVING COUNT(*) >= ALL (
+	SELECT COUNT(*)
+	FROM art_mov
+	GROUP BY  artist_id
+);
+
+-- 19. Todos los datos del artista que actuó en más películas
+
+SELECT a.*, COUNT(*)
+FROM artists a, art_mov am
+WHERE a.artist_id=am.artist_id
+GROUP BY a.artist_id, a.name, a.country, a.born_date
+HAVING COUNT(*) >= ALL (
+	SELECT COUNT(*)
+	FROM art_mov
+	GROUP BY  artist_id
+);
+
+-- 20. Identificador del artista que dirigió más películas
+
+SELECT director_id, COUNT(*)
+FROM movies
+GROUP BY director_id
+HAVING COUNT(*) >= ALL (
+	SELECT COUNT(*)
+	FROM movies
+	GROUP BY director_id
+);
+
+-- 21. Todos los datos del artista que dirigió más películas
+
+SELECT a.*, COUNT(*)
+FROM movies m, artists a
+WHERE m.director_id=a.artist_id
+GROUP BY a.artist_id, a.name, a.country, a.born_date
+HAVING COUNT(*) >= ALL (
+	SELECT COUNT(*)
+	FROM movies
+	GROUP BY director_id
+);
+
+-- La función CURRENT_DATE() devuelve la fecha del sistema
+
+-- La función TIMESTAMPDIFF(unit,date1,date2) devuelve la diferencia entre dos fechas/horas
+-- El parámetro unit puede ser SECOND, MINUTE, HOUR, DAY, MONTH y YEAR
+-- Si date1 es menor que date2 devuelve un valor positivo
+
+-- 22. Todos los datos de los artistas junto con su edad actual
+
+SELECT *, TIMESTAMPDIFF(YEAR,born_date,CURRENT_DATE())
+FROM artists
+WHERE dead_date IS NOT NULL;
+
+-- 23. Todos los datos de los artistas con edad inferior a la media
+
+SELECT *, TIMESTAMPDIFF(YEAR,born_date,CURRENT_DATE())
+FROM artists
+WHERE dead_date IS NOT NULL 
+AND TIMESTAMPDIFF(YEAR,born_date,CURRENT_DATE()) < (
+	SELECT AVG(TIMESTAMPDIFF(YEAR,born_date,CURRENT_DATE()))
+	FROM artists
+	WHERE dead_date IS NOT NULL
+);
+
+-- 24. Diferencia de edad en años entre Al Pacino y Robert de Niro
+
+SELECT TIMESTAMPDIFF(YEAR,a1.born_date,a2.born_date)
+FROM artists a1, artists a2
+WHERE a1.name='Al Pacino' AND a2.name='Robert de Niro';
+
+-- 25. Edad de Clint Eastwood cuando dirigió 'Million dollar baby'
+
+SELECT m.release_year-YEAR(a.born_date)
+FROM movies m, artists a
+WHERE m.director_id=a.artist_id
+AND a.name='Clint Eastwood'
+AND m.title='Million dollar baby';
+
+-- 26. Todos los datos del reparto de la película más antigua
+
+SELECT *
+FROM artists
+WHERE artist_id IN (
+	SELECT artist_id
+	FROM art_mov
+	WHERE movie_id IN (
+		SELECT movie_id
+		FROM movies
+		WHERE release_year <= ALL (
+			SELECT release_year
+			FROM movies
+		)
+	)
+);
+
+-- 27. Todos los datos del estudio de la película más reciente
+
+SELECT *
+FROM studios
+WHERE studio_id IN (
+	SELECT studio_id
+	FROM movies
+	WHERE release_year <= ALL (
+		SELECT release_year
+		FROM movies
+	)
+);
+
+-- 28. Identificadores de estudios donde hayan actuado más de 
+-- cinco artistas distintos
+
+SELECT m.studio_id, COUNT(DISTINCT am.artist_id)
+FROM movies m, art_mov am
+WHERE m.movie_id=am.movie_id
+GROUP BY m.studio_id
+HAVING COUNT(DISTINCT am.artist_id)>3;
+
+-- 29. Lo mismo pero que aparezca el nombre del estudio
+
+SELECT m.studio_id, s.name, COUNT(DISTINCT am.artist_id)
+FROM studios s, movies m, art_mov am
+WHERE s.studio_id=m.studio_id AND m.movie_id=am.movie_id
+GROUP BY m.studio_id, s.name
+HAVING COUNT(DISTINCT am.artist_id)>3;
+
+----------------------------------------------------------
+-------------- Subconsultas Correlacionadas --------------
+----------------------------------------------------------
+-- Hay una correlación entre la subconsulta y la consulta.
+-- La subconsulta usa un campo de la consulta principal.
+-- Una subconsulta 'normal' sólo se ejecuta una vez.
+-- La subconsulta correlacionada se ejecuta una vez para
+-- cada fila de la consulta principal.
+
+-- 30. Para cada identificador de estudio, la película más reciente
+
+SELECT *
+FROM movies m1
+WHERE release_year=(
+	SELECT MAX(release_year)
+	FROM movies m2
+	WHERE m1.studio_id=m2.studio_id
+);
+
+-- 31. Lo mismo de antes sin usar MAX y usando ALL
+
+SELECT *
+FROM movies m1
+WHERE release_year >= ALL (
+	SELECT release_year
+	FROM movies m2
+	WHERE m1.studio_id=m2.studio_id
+);
+
+-- 32. Lo mismo de antes pero con el nombre del estudio
+
+SELECT *
+FROM studios s, movies m1
+WHERE s.studio_id=m1.studio_id
+AND release_year >= ALL (
+	SELECT release_year
+	FROM movies m2
+	WHERE m1.studio_id=m2.studio_id
+);
+
+-- 33. Para cada identificador de película, el actor más joven
+-- Es necesaria una subconsulta correlacionada
+-- La película de la consulta es igual a la película de la subconsulta
+
+SELECT *
+FROM art_mov am1, artists a1
+WHERE am1.artist_id=a1.artist_id
+AND a1.born_date >= ALL (
+	SELECT born_date
+	FROM art_mov am2, artists a2
+	WHERE am2.artist_id=a2.artist_id
+	AND am1.movie_id=am2.movie_id  
+);
+
+-- 34. A lo anterior añadir el título de la película
+
+SELECT m.movie_id, m.title, a1.*
+FROM movies m, art_mov am1, artists a1
+WHERE m.movie_id=am1.movie_id AND am1.artist_id=a1.artist_id
+AND a1.born_date >= ALL (
+	SELECT born_date
+	FROM art_mov am2, artists a2
+	WHERE am2.artist_id=a2.artist_id
+	AND am1.movie_id=am2.movie_id  
+);
+
+-- 35. Para cada actor, su identificador y título de su primera película
+-- Se necesita una subconsulta correlacionada
+-- El artista de la consulta es igual al artista de la subconsulta
+
+SELECT  am1.artist_id, m1.title
+FROM movies m1, art_mov am1
+WHERE m1.movie_id=am1.movie_id
+AND m1.release_year <= ALL (
+	SELECT release_year
+	FROM movies m2, art_mov am2
+	WHERE m2.movie_id=am2.movie_id
+	AND am1.artist_id=am2.artist_id -- Correlación 
+);
+
+-- 36. A lo anterior añadir el nombre del actor
+
+SELECT am1.artist_id, a.name, m1.title
+FROM movies m1, art_mov am1, artists a
+WHERE am1.artist_id=a.artist_id
+AND m1.movie_id=am1.movie_id
+AND m1.release_year <= ALL (
+	SELECT release_year
+	FROM movies m2, art_mov am2
+	WHERE m2.movie_id=am2.movie_id
+	AND am1.artist_id=am2.artist_id -- Correlación 
+);
