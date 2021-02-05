@@ -267,6 +267,32 @@ HAVING COUNT(*) >= ALL (
 	WHERE i.invoice_id=iw.invoice_id
 	GROUP BY i.customer_id
 );
+--24- Para cada identificador de cliente, el identificador del producto mas caro
+SELECT*
+FROM invoices i1,items_part ip1
+WHERE i.invoice_id=ip.invoice_id
+AND ipl.price >= ALL(
+	SELECT ip2.pr
+	FROM invoices i2,items_part ip2
+	WHERE i2.invoice_id=ip2.invoice_id
+	AND i1.customer_id=i2.customer_id
+);
+
+--25. Añadir a lo anterior todos los datos del cliente
+SELECT c.*,ip1.part_id,ip1.price
+FROM customer c,invoices i1,items_part ip1
+WHERE c.customer_id=i1.invoice_id
+AND ipl.price >= ALL(
+	SELECT ip2.pr
+	FROM invoices i2,items_part ip2
+	WHERE i2.invoice_id=ip2.invoice_id
+	AND i1.customer_id=i2.customer_id
+);
+
+--Añadir a lo anterior la descripcion de la pieza
+
+
+
 
 -- 1. Todos los datos de las provincias de Andalucía
 
@@ -638,6 +664,41 @@ HAVING COUNT(*) >= ALL (
 	)
 	GROUP BY river_id
 );
+--27. Para cada identifiacador de rio, identificador de laprovincia donde desemboca
+SELECT*
+FROM pro_riv pr1
+WHERE river_order =(
+	SELECT MAX(river.order)
+	FROM pro_riv pr2
+	WHERE pr1.river_id=pr2.river_id
+);
+
+--28. Añadir a lo anterior los nombres de rios y de provincias
+SELECT r.name,p.name
+FROM pro_riv pr1, provinces p, rivers r
+WHERE p.province_id=pr1.province_id AND pr1.river_id=r.river_id 
+AND river_order=(
+	SELECT MAX(river.order)
+	FROM pro_riv pr2
+	WHERE pr1.river_id=pr2.river_id
+);
+
+--29.Para cada region, su nombre y todos los datos de su cordilllera mas alta
+
+SELECT r1.name, ml.*
+FROM regions r1,provinces p1,pro_mou pr1,mountains ml
+WHERE r1.region_id=p1.region_id AND p1.province_id=pr1.province_id
+AND pr1.mountain_id=m1.mountain_id
+AND m1.height =(
+	SELECT MAX(m2.height)
+	FROM provinces p2,pro_mou pr2,mountains m2
+	WHERE p2.province_id=pr2.province_id
+	AND pr2.mountain_id=m2.mountain_id
+	AND p1.region_id=p2.region_id
+);
+
+--30. Para cada cordillera  
+
 -- 1. Todos los datos de los libros de Cervantes
 
 SELECT *
@@ -1234,3 +1295,40 @@ AND m1.release_year <= ALL (
 	WHERE m2.movie_id=am2.movie_id
 	AND am1.artist_id=am2.artist_id -- Correlación 
 );
+
+-- 1. las piezas de Mozart.
+SELECT*
+FROM pieces
+WHERE composer_id IN(
+	SELECT composer_id
+	FROM composers
+	WHERE name='Mozart'
+);
+-- 2. Todos los datos de las piezas de Mozart que se hayan tocado en el año 2020.
+
+SELECT*
+FROM pieces
+WHERE composer_id IN(
+	SELECT composer_id
+	FROM composers
+	WHERE name='Falla'
+)
+AND piece_id IN(
+	SELECT piece_id
+	FROM con_per
+	WHERE concert_id IN(
+		SELECT concert_id
+		FROM concerts
+		WHERE YEAR(concert_date)=2019
+		)
+);
+
+-- 3. Todos los datos de intérpretes que nunca han tocado piezas de Mozart.
+-- 4. Todos los datos del compositor más antiguo.
+-- 5. Todos los datos del compositor con más piezas.
+-- 6. Para cada auditorio, todos sus datos, número de conciertos y suma de público.
+-- 7. Todos los datos del auditorio con más suma de público.
+-- 8. Todos los datos de violinistas que tocaron en la Casa Colón, sin duplicados.
+-- 9. Número de violinistas distintos que tocaron en la Casa Colón.
+-- 10. Para cada intérprete, todos sus datos y número de instrumentos distintos que toca.
+-- 11. Identificador de los intérpretes que hayan tocado en todos los conciertos.
