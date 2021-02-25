@@ -52,4 +52,14 @@ public class animelist extends DataBase {
 		return animes;
 	
 }
+	public boolean newAnime(String name, String gender)  throws Exception {
+		String sql= "insert into animes(name,gender) values ('"+name+"','"+gender+"')";
+		try{
+			this.stm.executeUpdate(sql);
+			return true;
+		}
+		catch(Exception ex) {
+			return false;
+		}
+	}
 }
