@@ -12,6 +12,30 @@ public class Testanimelist {
 			animelist db = new animelist();
 			int op;
 			User user;
+			do {
+				op = menu();
+				switch (op) {
+				case 1:
+					user = login(db);
+					if (user != null) {
+						insideSystem(db, user);
+					} else
+						System.out.println("You have to register.");
+					for(int i = 0; i < db.getAnime(user).size();i++) {
+						System.out.println(db.getAnime(user).get(i));
+					}
+					break;
+					
+				case 2: 
+					boolean inserted = newUser(db);
+					if(inserted)
+						System.out.println("Usuario registrado con éxito. Ve a logearte");
+					else
+						System.out.println("Problems with registration");
+					break;
+				
+				}
+			} while (op != 4);
 		} catch (Exception ex) {
 			System.out.println("Red code You are NOT connected to EMAIL");
 		}
@@ -38,13 +62,13 @@ public class Testanimelist {
 		return u;
 	}
 	public static void insideSystem(animelist db, User user) {// throws Exception
-		System.out.println("Welcome " + user);
+		System.out.println("Bienvenido " + user);
 	}
 	public static boolean newUser(animelist db) throws Exception {
 		Scanner teclado = new Scanner(System.in);
-		System.out.println("Enter your name");
+		System.out.println("Introduce tu nombre");
 		String name = teclado.next().toUpperCase();
-		System.out.println("Enter your password");
+		System.out.println("Introduce tu contraseña");
 		String pass = teclado.next();
 		return db.newUser(name, pass);
 	}
