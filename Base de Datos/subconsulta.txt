@@ -289,11 +289,133 @@ AND ipl.price >= ALL(
 	AND i1.customer_id=i2.customer_id
 );
 
---Añadir a lo anterior la descripcion de la pieza
+-- 26. Añadir a lo anterior la descripción de la pieza
+
+SELECT c.*, ip1.part_id, ip1.price, p.description
+FROM customers c, invoices i1, items_part ip1, parts p
+WHERE c.customer_id=i1.customer_id
+AND i1.invoice_id=ip1.invoice_id
+AND ip1.part_id=p.part_id
+AND ip1.price >= ALL (
+	SELECT ip2.price
+	FROM invoices i2, items_part ip2
+	WHERE i2.invoice_id=ip2.invoice_id
+	AND i1.customer_id=i2.customer_id  -- Correlación
+);
+
+-- 27. Para cada identificador de vehículo, máximo importe de ítem de mano de obra
+
+SELECT i1.vehicle_id, i1.price_hour*iw1.hours
+FROM invoices i1, items_work iw1
+WHERE i1.invoice_id=iw1.invoice_id
+AND i1.price_hour*iw1.hours >= ALL (
+	SELECT i2.price_hour*iw2.hours
+	FROM invoices i2, items_work iw2
+	WHERE i2.invoice_id=iw2.invoice_id
+	AND i1.vehicle_id=i2.vehicle_id
+);
+
+-- 28. Añadir a lo anterior la marca y modelo del vehículo
+
+SELECT i1.vehicle_id, v.brand, v.model, i1.price_hour*iw1.hours
+FROM vehicles v, invoices i1, items_work iw1
+WHERE v.vehicle_id=i1.vehicle_id
+AND i1.invoice_id=iw1.invoice_id
+AND i1.price_hour*iw1.hours >= ALL (
+	SELECT i2.price_hour*iw2.hours
+	FROM invoices i2, items_work iw2
+	WHERE i2.invoice_id=iw2.invoice_id
+	AND i1.vehicle_id=i2.vehicle_id
+);
+
+-- 29. Para cada cliente (que salgan todos), todos sus datos y número de facturas
+
+SELECT c.customer_id, c.name, c.email, c.city, COUNT(i.invoice_id)
+FROM customers c LEFT JOIN invoices i ON c.customer_id=i.customer_id
+GROUP BY c.customer_id, c.name, c.email, c.city;
+
+-- 30. Para cada vehículo (que salgan todos), todos sus datos y número de facturas
+
+SELECT v.*, COUNT(i.invoice_id)
+FROM vehicles v LEFT JOIN invoices i
+ON v.vehicle_id=i.vehicle_id
+GROUP BY v.vehicle_id, v.brand, v.model;
+
+-- 31. Para cada mecánico (que salgan todos), número de ítems de mano de obra,
+-- suma de horas y número de facturas
+
+SELECT m.*, COUNT(DISTINCT iw.invoice_id) AS num_invoices,
+COUNT(iw.mechanic_id) AS num_items, SUM(IFNULL(iw.hours,0)) AS sum_hours
+FROM mechanics m LEFT JOIN items_work iw
+ON m.mechanic_id=iw.mechanic_id
+GROUP BY m.mechanic_id,m.name,m.phone;
+
+-- 32. Para cada pieza (que salgan todas), número de ítems, suma de importe
+-- y número de facturas
+
+SELECT p.*, COUNT(DISTINCT ip.invoice_id) AS num_invoices,
+COUNT(ip.part_id) AS num_items, SUM(IFNULL(ip.units*ip.price,0)) AS sum_import
+FROM parts p LEFT JOIN items_part ip
+ON p.part_id=ip.part_id
+GROUP BY p.part_id, p.description, p.price;
+
+-- 33. Left join de customers, invoices e items_part
+
+SELECT *
+FROM customers c LEFT JOIN invoices i ON c.customer_id=i.customer_id
+LEFT JOIN items_part ip ON i.invoice_id=ip.invoice_id;
+
+-- 34. La consulta anterior agruparla por cliente y contar el número de
+-- facturas, el número de ítems y la suma de importe de ítems
+
+SELECT c.*, COUNT(DISTINCT i.invoice_id) AS num_invoices,
+COUNT(ip.item_part_id) AS num_items, 
+SUM(IFNULL(ip.units*ip.price,0)) AS sum_import
+FROM customers c LEFT JOIN invoices i ON c.customer_id=i.customer_id
+LEFT JOIN items_part ip ON i.invoice_id=ip.invoice_id
+GROUP BY c.customer_id, c.name, c.email, c.city;
+
+-- 35. Para cada cliente (que salgan todos) todos sus datos, número de
+-- facturas, número de ítems de mano de obra y suma de importe de mano de obra
+
+SELECT c.*, COUNT(DISTINCT i.invoice_id) AS num_invoices,
+COUNT(iw.item_work_id) AS num_items, 
+SUM(IFNULL(iw.hours*i.price_hour,0)) AS sum_import
+FROM customers c LEFT JOIN invoices i ON c.customer_id=i.customer_id
+LEFT JOIN items_work iw ON i.invoice_id=iw.invoice_id
+GROUP BY c.customer_id, c.name, c.email, c.city;
+
+--43.Para cada producto (que salgan todos), todos sus datos, y importe facturado, y porcentaje de importe facturado respecto al importe total
+
+SELECT p.*, IFNULL(s.sum_part,0), 
+ROUND(IFNULL(s.sum_part,0)/r.sum_total*100,2) AS porc_part
+FROM parts p
+LEFT JOIN (
+	SELECT part_id, SUM(units*price) AS sum_part
+	FROM items_part
+	GROUP BY part_id
+) s ON p.part_id=s.part_id, (
+	SELECT SUM(units*price) AS sum_total
+	FROM items_part
+) r;
+
+--44.Para cada mecanico (que salgan todos), todos sis datos, importe facurado y porcentaje de importe respecto al importe total 
+
+SELECT m.*, IFNULL(s.sum_mec,0) AS sum_mec, 
+ROUND(IFNULL(s.sum_mec,0)/r.sum_total*100,2) AS porc_mec
+FROM mechanics m
+LEFT JOIN (
+	SELECT mechanic_id, SUM(hours) AS sum_mec
+	FROM items_work
+	GROUP BY mechanic_id
+) s ON m.mechanic_id=s.mechanic_id, (
+	SELECT SUM(hours) AS sum_total
+	FROM items_work
+) r;
 
 
 
-
+---------------------------------------------------------------
 -- 1. Todos los datos de las provincias de Andalucía
 
 SELECT *
@@ -696,8 +818,105 @@ AND m1.height =(
 	AND pr2.mountain_id=m2.mountain_id
 	AND p1.region_id=p2.region_id
 );
+ 
+-- 30. Para cada cordillera, todos sus datos junto con una columna que tome
+-- los siguientes valores:
+-- -- 1000 para altura máxima inferior a 1000
+-- -- 2000 para altura máxima inferior a 2000
+-- -- 3000 para altura máxima inferior a 3000
+-- -- 4000 para altura máxima inferior a 4000
 
---30. Para cada cordillera  
+SELECT *,	IF(height<1000,1000,
+				IF(height<2000,2000,
+					IF(height<3000,3000,4000)))
+FROM mountains;
+
+----------------------------------------------------------
+-------------- Subconsultas en FROM-----------------------
+----------------------------------------------------------
+-- En la clausura FROM puede usarse una subconsulta entre parentesis en lugar de una tabla o vista 
+
+--Densidad de poblacion de las provincias con mayor densidad que huelva
+
+SELECT *,population/surface AS densidad
+FROM (
+	SELECT population/surface AS densidad_huelva
+	FROM provinces
+	WHERE name='Huelva') dh,
+provinces;
+
+--Es como si fuera
+SELECT *,population/surface AS densidad
+FROM dh,provinces;
+
+
+--32.Rio gallego mas largo y rio andaluz mas largo
+
+SELECT name
+FROM rivers
+WHERE length=(
+	SELECT MAX(length)
+	FROM rivers
+	WHERE river_id IN(
+		SELECT river_id
+		FROM pro_riv
+		WHERE province_id IN(
+			SELECT province_id
+			FROM regions
+			WHERE name='Galicia'
+			)
+		)
+AND length =(
+			SELECT name
+			FROM rivers
+			WHERE length=(
+	SELECT MAX(length)
+	FROM rivers
+	WHERE river_id IN(
+		SELECT river_id
+		FROM pro_riv
+		WHERE province_id IN(
+			SELECT province_id
+			FROM regions
+			WHERE name='Andaluz'
+			
+			)
+		)
+	)
+
+--33.Rio andaluz y rio gallego mas largo 
+
+SELECT*
+FROM () s1,() s2;
+
+--34.Porcentaje de poblacion de cada provincia respecto a la poblacion total de España
+--La  poblacion total de españa
+
+--La poblacion de España 
+
+SELECT SUM(population)
+FROM provinces;
+
+--El porcentaje por provincia
+
+SELECT*,population/45210755*100 AS porcentaje
+FROM provinces;
+
+-- Con una subconsulta en FROM
+
+SELECT *, population/sum_españa*100 AS porcentaje
+FROM provinces,(
+	SELECT SUM(population) AS sum_españa
+	FROM provincias
+) vl;
+
+--35.Todas las parejas de provincias tal que la primera povincia sea mayor en superficie  que la segunda provincia
+
+Huelva, Sevilla no sale
+Sevilla, Huelva si sale
+
+--36.Porcentaje de poblacion de cada provincia respecto a la poblacion total de su comunidad autonoma
+
 
 -- 1. Todos los datos de los libros de Cervantes
 
@@ -882,6 +1101,87 @@ WHERE book_id IN (
 -- sin necesidad de hacer equijoin.
 -- Los datos de la subconsulta pueden ser una fila o un conjunto
 -- de filas.
+
+SELECT *
+FROM copies
+WHERE book_id IN (
+	SELECT book_id
+	FROM boo_the
+	WHERE theme_id = (
+		SELECT theme_id
+		FROM themes
+		WHERE name='Database'
+	)
+);
+
+-- 16. Para cada autor, su libro con más páginas (correlacionada)
+
+SELECT *
+FROM authors a1, boo_aut ba1, books b1
+WHERE a1.author_id=ba1.author_id AND ba1.book_id=b1.book_id
+AND b1.pages = (
+	SELECT MAX(b2.pages)
+	FROM boo_aut ba2, books b2
+	WHERE ba2.book_id=b2.book_id
+	AND a1.author_id=ba2.author_id  -- Correlación
+);
+
+-- 17. Para cada identificador de socio, su primer préstamo
+
+SELECT *
+FROM loans l1
+WHERE init_date = (
+	SELECT MIN(init_date)
+	FROM loans l2
+	WHERE l1.member_id=l2.member_id  -- Correlación
+);
+
+-- 18. Añadir a lo anterior el nombre del socio
+
+SELECT l1.*, m.name
+FROM loans l1, members m
+WHERE l1.member_id=m.member_id
+AND init_date = (
+	SELECT MIN(init_date)
+	FROM loans l2
+	WHERE l1.member_id=l2.member_id  -- Correlación
+);
+
+-- 19. Para cada libro (que salgan todos), todos sus datos, número de copias,
+-- y número de préstamos
+
+SELECT b.*, COUNT(DISTINCT c.copy_id) AS num_copies, COUNT(l.loan_id) AS num_loans
+FROM books b LEFT JOIN copies c ON b.book_id=c.book_id
+LEFT JOIN loans l ON c.copy_id=l.copy_id
+GROUP BY b.book_id, b.title, b.language, b.pages, b.publisher;
+
+-- 20. Para cada socio (que salgan todos), todos sus datos, número de préstamos
+-- y número de copias
+SELECT m.*, COUNT(loan_id),COUNT(DISTINCT copy_id)
+FROM members m LEFT JOIN loans ON m.member_id=l.member_id
+GROUP BY m.member_id,m.name,m.email,m.phone;
+
+--21.Para cada autor (que salgan todos), todos sus datos, numero de prestamos y numero de copias distintas
+
+--22.Añadir a lo anterior el numero de prestamos
+SELECT a.* COUNT(DISTINCT b.book_id) AS num_books, COUNT(DISTINCT c.copy_id)
+COUNT(l.loan_id) AS num_loans
+FROM authors a
+LEFT JOIN boo_aut ba ON a.author_id=ba.author_id
+LEFT JOIN books b ON ba.book_id=b.book_id
+LEFT JOIN copies c ON b.book_id=c.book_id
+LEFT JOIN loans l ON c.copy_id=l.copy_id
+GROUP BY a.author_id, a.name, a.born_date,a.death_date
+
+--23. Para cada tema, numero de libros, numero de copias y numero de prestamos
+
+SELECT t.theme_id, t.name 
+COUNT(DISTINCT bt.book_id) AS num_books,
+COUNT(DISTINCT c.copy_id)AS num_copies,
+COUNT(DISTINCT l.loan_id) AS num_loans
+FROM themes t
+LEFT JOIN boo_the bt ON 
+
 
 -- 1. Todas las películas de Paramount Pictures
 
@@ -1296,6 +1596,90 @@ AND m1.release_year <= ALL (
 	AND am1.artist_id=am2.artist_id -- Correlación 
 );
 
+--37.Para casa artista (que salgan todos) todos sus datos de peliculas dirigidas 
+SELECT a.artist_id,a.name,a.country,a.born_date,COUNT(m.director_id)
+FROM artists a LEFT JOIN movies m ON a.artist_id=m.director_id
+GROUP BY a.artist_id,a.name,a.country,a.born_date;
+
+--38. Para cada estudio, todos sus datos y numero de peliculas
+SELECT s.studio_id,s.name,s.fundation_year,COUNT(m.movie_id)
+FROM studios s LEFT JOIN movies m ON s.studio_id=m.studio_id
+GROUP BY s.studio_id,s.name,s.fundation_year;
+
+--39. Para cada artista, todos sus datos y numero de peliculas
+SELECT a.artist_id,a.name,a.country,a.born_date COUNT(am.artist_id)
+FROM artists a LEFT JOIN art_mov am ON a.artist_id=am.artist_id
+GROUP BY a.artist_id,a.name,a.country,a.born_date;
+
+-- 40. Todos los datos de películas donde Elijah Wood fuera menor de 20 años (aprox)
+
+SELECT * 
+FROM movies
+WHERE movie_id IN (
+	SELECT movie_id
+	FROM art_mov
+	WHERE artist_id = (
+		SELECT artist_id
+		FROM artists
+		WHERE name='Elijah Wood'
+	)
+)
+AND release_year <= (
+	SELECT YEAR(born_date)+20
+	FROM artists
+	WHERE name='Elijah Wood'
+);
+
+-- 41. Para cada artista (que salgan todos), todos sus datos, número de 
+-- películas dirigidas y porcentaje respecto al total de películas (37)
+
+SELECT a.*, 
+COUNT(m.movie_id) AS count_movies, COUNT(m.movie_id)/s.num_movies*100 AS porc_movies
+FROM artists a LEFT JOIN movies m ON a.artist_id=m.director_id, (
+	SELECT COUNT(*) AS num_movies
+	FROM movies
+) s
+GROUP BY a.artist_id, a.name, a.country, a.born_date, s.num_movies;
+
+-- 42. Para cada estudio (que salgan todos), todos sus datos, número de
+-- películas y porcentaje respecto al total de películas (38)
+
+SELECT s.studio_id, s.name, s.fundation_year, 
+COUNT(m.movie_id) AS count_movies, COUNT(m.movie_id)/s.num_movies*100 AS porc_movies
+FROM studios s LEFT JOIN movies m ON s.studio_id=m.studio_id, (
+	SELECT COUNT(*) AS num_movies
+	FROM movies
+) s
+GROUP BY s.studio_id, s.name, s.fundation_year;
+
+-- 43. Para cada artista (que salgan todos), todos sus datos, número de
+-- películas en las que actúa y porcentaje respecto al total de películas (39)
+
+SELECT a.artist_id, a.name, a.country, a.born_date, 
+COUNT(am.artist_id) AS num_movies, COUNT(am.artist_id)/s.num_movies*100
+FROM artists a LEFT JOIN art_mov am ON a.artist_id=am.artist_id, (
+	SELECT COUNT(*) AS num_movies
+	FROM movies
+) s
+GROUP BY a.artist_id, a.name, a.country, a.born_date;
+
+-- 44. Para cada década (20, 30, 40, etc), número de artistas 
+
+SELECT	IF(YEAR(born_date)<1950,'40',
+			IF(YEAR(born_date)<1960,'50',
+				IF(YEAR(born_date)<1970,'60',
+					IF(YEAR(born_date)<1980,'70',
+						IF(YEAR(born_date)<1990,'80',
+							IF(YEAR(born_date)<2000,'90',
+								IF(YEAR(born_date)<2010,'00','10'))))))) AS decade, COUNT(*)
+FROM artists
+GROUP BY IF(YEAR(born_date)<1950,'40',
+			IF(YEAR(born_date)<1960,'50',
+				IF(YEAR(born_date)<1970,'60',
+					IF(YEAR(born_date)<1980,'70',
+						IF(YEAR(born_date)<1990,'80',
+							IF(YEAR(born_date)<2000,'90',
+								IF(YEAR(born_date)<2010,'00','10')))))));
 -- 1. las piezas de Mozart.
 SELECT*
 FROM pieces
@@ -1324,11 +1708,553 @@ AND piece_id IN(
 );
 
 -- 3. Todos los datos de intérpretes que nunca han tocado piezas de Mozart.
+SELECT*
+FROM performers
+WHERE performer_id NOT IN(
+	SELECT performer_id
+	FROM con_per
+	WHERE piece_id IN(
+		SELECT piece_id
+		FROM pieces
+		WHERE composer_id =(
+			SELECT composer_id
+			FROM composers
+			WHERE name LIKE 'Mozart'
+			)
+		)
+)
 -- 4. Todos los datos del compositor más antiguo.
+SELECT*
+FROM composers
+WHERE born_date =(
+	SELECT MIN(born_date)
+	FROM composers
+);
+
 -- 5. Todos los datos del compositor con más piezas.
+SELECT c.*,COUNT(*)
+FROM composers c,pieces p
+WHERE c.composer_id=p.composer_id
+GROUP BY c.composer_id,c.name,c.country,c.born_date,c.death_date
+HAVING COUNT(*)>= ALL (
+	SELECT COUNT(*)
+	FROM pieces
+	GROUP BY composer_id
+);
 -- 6. Para cada auditorio, todos sus datos, número de conciertos y suma de público.
+SELECT auditorium,COUNT(*) AS num_concerts,SUM(people)AS sum_people
+FROM concerts
+GROUP BY auditorium;
+
 -- 7. Todos los datos del auditorio con más suma de público.
+SELECT auditorium,COUNT(*) AS num_concerts,SUM(people)AS sum_people
+FROM concerts
+GROUP BY auditorium;
+HAVING SUM (people) >= ALL (
+	SELECT SUM (people)
+	FROM concerts
+	GROUP BY auditorium
+);
 -- 8. Todos los datos de violinistas que tocaron en la Casa Colón, sin duplicados.
+SELECT*
+FROM performers
+WHERE performer_id IN(
+	SELECT performer_id
+	FROM per_con
+	WHERE instrument='Violin'
+	AND concert_id IN(
+		SELECT concert_id
+		FROM concerts
+		WHERE auditorium='Casa Colon'
+		)
+)
 -- 9. Número de violinistas distintos que tocaron en la Casa Colón.
+
+SELECT COUNT(DISTINCT performer_id)
+FROM per_con
+WHERE instrument='Violin'
+AND concert_id IN (
+	SELECT concert_id
+	FROM concerts
+	WHERE auditorium='Casa Colón'
+);
+
 -- 10. Para cada intérprete, todos sus datos y número de instrumentos distintos que toca.
+
+SELECT p.performer_id, p.name, COUNT(DISTINCT instrument)
+FROM performers p, per_con pc
+WHERE p.performer_id=pc.performer_id
+GROUP BY p.performer_id, p.name;
+
 -- 11. Identificador de los intérpretes que hayan tocado en todos los conciertos.
+
+SELECT performer_id, COUNT(*)
+FROM per_con
+GROUP BY perforner_id
+HAVING COUNT(*) = (
+	SELECT COUNT(*)
+	FROM concerts
+);
+
+-----------------------------------------------------
+--------------- La clausula JOIN --------------------
+-----------------------------------------------------
+
+-- Es una sintaxis más formal de hacer un equijoin
+-- FROM <tabla_padre> JOIN <tabla_hija> ON <clave_primaria>=<clave_ajena>
+
+-- 12. Equijoin de compositores y piezas
+
+SELECT *
+FROM composers c JOIN pieces p 
+ON c.composer_id=p.composer_id;
+
+-----------------------------------------------------
+----------- Equi-join externo o Left-join -----------
+-----------------------------------------------------
+
+-- En el resultado aparecen las filas de la tabla padre
+-- que no se han emparejado por no tener hijos.
+-- Se usa LEFT antes de JOIN
+
+-- 13. Left-join de compositores y piezas
+
+SELECT *
+FROM composers c LEFT JOIN pieces p 
+ON c.composer_id=p.composer_id;
+
+-- 14. Para cada compositor (que salgan todos), todos sus datos y número de piezas
+
+SELECT c.*, COUNT(p.piece_id)
+FROM composers c LEFT JOIN pieces p 
+ON c.composer_id=p.composer_id
+GROUP BY c.composer_id,c.name,c.born_date,c.death_date,c.country;
+
+-- 15. Para cada intérprete (que salgan todos), todos sus datos, número de conciertos,
+-- y número de instrumentos distintos que toca
+
+SELECT p.*, COUNT(DISTINCT concert_id), COUNT(DISTINCT instrument)
+FROM performers p LEFT JOIN per_con pc
+ON p.performer_id=pc.performer_id
+GROUP BY p.performer_id, p.name, p.email, p.phone, p.born_date;
+
+-- 16. Para cada pieza musical (que salgan todas), todos sus datos y número de conciertos
+
+SELECT p.*, COUNT(DISTINCT concert_id)
+FROM pieces p LEFT JOIN per_con pc
+ON p.piece_id=pc.piece_id
+GROUP BY p.piece_id, p.title, p.gender, p.composer_id;
+
+--17.Para cada sede, suma de publico y porcentaje respecto al publico total
+
+SELECT  c.auditorium, SUM(c.people), SUM(c.people)/s.sum_people*100
+FROM concerts c,(
+	SELECT SUM(people) AS sum_people
+	FROM concerts
+)s
+GROUP BY c.auditorium
+
+--18. Crea una tabla auxiliar con tres compositores y luego inserta mediante una consulta todos esos datos
+
+CREATE TABLE com_aux(
+	na VARCHAR(30),
+	co VARCHAR(30),
+	bo DATE,
+	de DATE
+);
+
+INSERT INTO com_aux (
+
+);
+
+--19. Para cada compositor (que salgan todos), todos sus datos, numero de piezas musicales y porcentajes de piezas 
+--con respecto al total de piezas
+
+SELECT c.*,COUNT(p.piece_id) AS num_pieces
+FROM composers c 
+LEFT JOIN pieces p
+ON c.composer_id=p.composer_id
+GROUP BY c.composer_id,c.name,c.country,c.born_date,c.death_date
+
+
+
+--20. Para cada compositor. siglo de nacimiento 
+
+
+--21. Para cada siglo, numero de compositores 
+
+--22. Edad de Johann Strauss padre cuando nacio Johann Strauss hijos
+
+--23.
+
+--24. Suma de publico del Gran Teatro menos suma de publico de la Casa Colon
+SELECT SUM(people)
+FROM concerts
+WHERE auditorium="Casa Colon";
+
+-- Esto da 2033
+
+SELECT SUM(people)
+FROM concerts
+WHERE auditorium='Gran Teatro'
+
+--Esto da 780
+SELECT 2033-780;
+
+--Esto da 1253
+
+SELECT s1.suma-s2.suma
+FROM(
+	SELECT SUM(people)
+FROM concerts
+WHERE auditorium="Casa Colon"
+) s1, (
+	SELECT SUM(people)
+FROM concerts
+WHERE auditorium='Gran Teatro'
+)s2;
+
+
+--25. Dias transcurridos entre los dos ultimos conciertos de la Casa Colon
+
+-- La fecha del el ultimo concierto de la Casa Colon
+
+SELECT MAX(concert_date)
+FROM concerts
+WHERE auditorium="Casa Colon"
+
+--La fecha del penultimo concierto de la Casa Colon
+
+SELECT MAX(concert_date)
+FROM concerts
+WHERE auditorium='Casa Colón'
+AND concert_date <> (
+	SELECT MAX(concert_date)
+	FROM concerts
+	WHERE auditorium='Casa Colón'
+);
+
+-- Esto da 2019-12-22
+
+-- Lo ponemos todo junto usando subconsultas en FROM
+
+SELECT TIMESTAMPDIFF(DAY,date2,date1) 
+FROM (
+	SELECT MAX(concert_date) AS date1
+	FROM concerts
+	WHERE auditorium='Casa Colón'
+) s1, (
+	SELECT MAX(concert_date) AS date2
+	FROM concerts
+	WHERE auditorium='Casa Colón'
+	AND concert_date <> (
+		SELECT MAX(concert_date)
+		FROM concerts
+		WHERE auditorium='Casa Colón'
+	)
+) s2;
+
+-- 26. La edad de Beethoven cuando murió Mozart
+
+SELECT TIMESTAMPDIFF(YEAR,s1.born_date,s2.death_date)
+FROM (
+	SELECT born_date
+	FROM composers
+	WHERE name LIKE '%Beethoven%'
+) s1, (
+	SELECT death_date
+	FROM composers
+	WHERE name LIKE '%Mozart%'
+) s2;
+
+-- 27. Compositores contemporáneos de Tchaikovsky
+
+SELECT *
+FROM (
+	SELECT born_date, death_date
+	FROM composers
+	WHERE name='Tchaikovsky, Piotr Ilich'
+) t, composers c
+WHERE NOT (c.death_date < t.born_date
+OR c.born_date > t.death_date);
+
+-- 28. Compositores no contemporáneos de Tchaikovsky
+
+SELECT *
+FROM (
+	SELECT born_date, death_date
+	FROM composers
+	WHERE name='Tchaikovsky, Piotr Ilich'
+) t, composers c
+WHERE c.death_date < t.born_date
+OR c.born_date > t.death_date;
+
+-- 1. Todos los datos de los vehículos blancos o grises que
+-- entraron el día 01-10-2018
+
+SELECT *
+FROM vehicle
+WHERE color IN ('Blanco','Gris')
+AND vehicle_id IN (
+	SELECT vehicle_id
+	FROM stay
+	WHERE in_date='2018-10-01'
+);
+
+-- No sale ninguno porque el campo in_date es DATETIME
+-- La función DATE() devuelve la fecha de un DATETIME
+
+SELECT *
+FROM vehicle
+WHERE color IN ('Blanco','Gris')
+AND vehicle_id IN (
+	SELECT vehicle_id
+	FROM stay
+	WHERE DATE(in_date)='2018-10-01'
+);
+
+-- 2. Para cada marca, número de vehículos y número de estancias
+
+SELECT mark, COUNT(DISTINCT v.vehicle_id), COUNT(*)
+FROM vehicle v, stay s
+WHERE v.vehicle_id=s.vehicle_id
+GROUP BY mark;
+
+
+--3.Para cada matricula(todas), numero de entradas y numero de salidas
+
+SELECT v.vehicle_id,COUNT(in_date), COUNT(out_date)
+FROM vehicles v, LEFT JOIN stay s
+ON v.vehicle_id;
+
+--4.Todos los datos de los vehiculos que estan actualmente estacionados junto con el tiempo en minutos que llevan
+
+SELECT v.*,in_date, TIMESTAMPDIFF(MINUTE, in_date, CURRENT_TIMESTAMP()) AS MINUTE
+FROM vehicles v, stay s
+WHERE v.vehicle_id=s.vehicle_id
+AND out_date IS NULL;
+
+--5.Para cada dia y cada planta, numero de entradas y salidas
+
+SELECT DATE(in_date), place_floor, COUNT(in_date), COUNT(out_date)
+FROM stay s, place c
+WHERE s.place_id=c.place_id
+GROUP BY DATE(in_date), place_floor;
+
+-- 6. Para cada día y cada planta, número de entradas, porcentaje
+-- de entradas respecto al total de entradas, número de salidas y
+-- porcentaje de salidas respecto al total de salidas
+
+SELECT DATE(in_date), place_floor, 
+COUNT(in_date) AS num_entradas, COUNT(in_date)/v.count_in*100 AS por_entradas
+COUNT(out_date) AS num_salidas, COUNT(out_date)/v.count_out*100 AS por_salidas
+FROM stay s, place c, (
+	SELECT COUNT(in_date) AS count_in, COUNT(out_date) AS count_out
+	FROM stay
+) v
+WHERE s.place_id=c.place_id
+GROUP BY DATE(in_date), place_floor;
+--7.Todos los datos de las estancias y los precios por dia y minuto
+-- En el último tramo de precios (el vigente actualmente), hay que sustituir
+-- el valor NULL de la columna until_date por la fecha actual.
+-- De lo contrario, las estancias más recientes no se emparejan.
+
+SELECT*
+FROM stay s. price p
+WHERE s.in_date BETWEEN p.from_date AND p.until_date;
+
+--8.La marca de vehiculo que mas estancias tiene
+SELECT mark, COUNT(*)
+FROM vehicle v, stay s
+WHERE v.vehicle_id=s.vehicle_id
+GROUP BY mark
+HAVING COUNT(*) >= ALL (
+	SELECT COUNT(*)
+	FROM vehicle v, stay s
+	WHERE v.vehicle_id=s.vehicle_id
+	GROUP BY mark
+);
+
+--9. Todos los datos de las estancias junto con su duracion en min
+
+SELECT *, TIMESTAMPDIFF(MINUTE,in_date,out_date) AS duration
+FROM stay;
+
+--10. Teniendo en cuenta que un dia tiene 1440 minutos, calcula el numero de dias y de minutos de cada estancia
+--La funcion MOD y el operador % calculan el resto de la division 
+
+SELECT*, TIMESTAMPDIFF(MINUTE, in_date,out_date) AS duration_minutes,
+TIMESTAMPDIFF(DAY, in_date, out_date) AS duration_days,
+MOD(TIMESTAMPDIFF(MINUTE, int_date, out_date),1440) AS resto1,
+TIMESTAMPDIFF(MINUTE, int_date,out_date)%1440 AS resto2
+FROM stay;
+
+
+--11. Calcula el importe de cada estancia
+
+SELECT*, 
+TIMESTAMPDIFF(DAY, in_date,out_date) AS duration_days,
+MOD(TIMESTAMPDIFF(MINUTE, in_date, out_date),1440 AS resto,
+TIMESTAMPDIFF(DAY,in_date,out_date)*price_day AS import_days,
+MOD(TIMESTAMPDIFF(MINUTE, int_date, out_date),1440)*price_minute AS import_minutes,
+FROM stay s,price p
+WHERE s.in_date BETWEEN p.from_date AND p.until_date;
+
+
+--12. Recalcula el importe de las estancias teniendo en cuenta que no se porque puede
+--cobrar 
+SELECT *,
+TIMESTAMPDIFF(DAY,in_date,out_date) AS duration_days,
+MOD(TIMESTAMPDIFF(MINUTE,in_date,out_date),1440) AS resto,
+TIMESTAMPDIFF(DAY,in_date,out_date)*price_day AS import_days,
+IF(MOD(TIMESTAMPDIFF(MINUTE,in_date,out_date),1440)*price_minute>price_day,
+price_day,MOD(TIMESTAMPDIFF(MINUTE,in_date,out_date),1440)*price_minute) AS import_minutes,
+TIMESTAMPDIFF(DAY,in_date,out_date)*price_day +
+IF(MOD(TIMESTAMPDIFF(MINUTE,in_date,out_date),1440)*price_minute>price_day,
+price_day,MOD(TIMESTAMPDIFF(MINUTE,in_date,out_date),1440)*price_minute) AS import_total
+FROM stay s, price p
+WHERE s.in_date BETWEEN p.from_date AND IFNULL(p.until_date,CURRENT_DATE);
+
+--13.Para cada estancia, calcula la columna Duration con el siguiente valor:
+--Long en estancias de mas de 100 minutos
+--Short en estancias de menos de 100 minutos
+
+SELECT*, IF(TIMESTAMPDIFF(MINUTE,int_date,out_date)>100,'Long','Short')AS duration
+FROM stay;
+
+--14.Repite la consulta anterior pero con el valor "medium" para estancias
+-- comprendidas entre 80 y 100 minutos
+
+SELECT*, IF(TIMESTAMPDIFF(MINUTE,int_date,out_date)>100,'Long',
+			IF(TIMESTAMPDIFF(MINUTE,int_date,out_date)>80,'Medium','Short')AS duration
+FROM stay;
+
+--15.Repite la consulta anterior utilizando el operador <(less than)
+SELECT*, IF(TIMESTAMPDIFF(MINUTE,int_date,out_date)<100,'Long',
+			IF(TIMESTAMPDIFF(MINUTE,int_date,out_date)<80,'Medium','Short')AS duration
+FROM stay;
+
+--16.Todos los datos de la tabla vehiculos junto con una columna que muestra si el vehiculo es aleman o del resto del mundo
+
+SELECT* IF(mark IN ('Mercedes','BMW')AS pais
+FROM vehicle;
+
+--17.Vehiculos para los que no hay ninguna estancia
+
+SELECT*
+FROM vehicle
+WHERE vehicle_id NOT IN (
+	SELECT vehicle_id
+	FROM stay
+);
+
+--18.Para cada plaza,numero de estancias y porcentaje respecto al total
+--Que aparezcan todas las plazas
+
+SELECT p.place_id,COUNT(s.stay.id), COUNT(s.stay_id)/num_places*100
+FROM place p LEFT JOIN stay s
+ON p.place_id=s.place_id,(
+	SELECT COUNT(*)
+	FROM stay
+)t;
+GROUP BY p.place_id;
+
+--19.Tiempo en minutos que estuvo ocupada cada plaza (que salgan todos)
+SELECT p.place_id,SUM(TIMESTAMPDIFF(MINUTE,in_date,out_date)) AS suma
+FROM place p LEFT JOIN stay s
+ON p.place_id=s.place_id,(
+	SELECT COUNT(*)
+	FROM stay
+)t;
+GROUP BY p.place_id;
+
+--20.Minutos de ocupacion el dia 3 de octubre de 2018
+
+-- Suma de minutos de ocupación el día 3 de octubre de 2018
+
+-- Porcentaje de ocupación el día 3 de octubre de 2018
+
+-- En la consulta anterior, el número de plazas es 8
+-- Podemos obtener este valor mediante una consulta
+-- y guardarlo en una variable para su uso posterior
+
+
+-- Para cada marca con más de 4 vehículos, número de vehículos
+
+-- Para cada vehículo con más de una entrada,
+-- número de entradas y número de salidas
+
+SELECT vehicle_id, COUNT(in_date), COUNT(out_date)
+FROM stay
+GROUP BY vehicle_id 
+HAVING COUNT(in_date)>1
+
+--23.Todos los dtos del vehiculo que mas entradas tiene
+SELECT v.*,COUNT(*)
+FROM vehicle v,stay s
+WHERE v.vehicle_id=s.vehicle_id
+GROUP BY v.vehicle_id,v.mark,v.model,v.color
+HAVING COUNT(*) >= ALL(
+	SELECT COUNT(*)
+	FROM stay
+	GROUP vehicle_id
+);
+
+--24. Para cada vehiculo su estancia mas larga(Correlacionada)
+
+SELECT vehicle_id, TIMESTAMPDIFF(MINUTE,in_date,IFNULL(out_date,CURRENT_DATE)
+FROM stay s1
+WHERE TIMESTAMPDIFF(MINUTE,in_date,IFNULL(out_date,CURRENT_DATE))>= ALL(
+	SELECT MAX(TIMESTAMPDIFF(MINUTE,in_date,IFNULL(out_date,CURRENT_DATE)))
+	FROM stay s2
+	WHERE s1.vehicle_id=s2.vehicle_id
+);
+
+--25.Para cada plaza, su identificador y su estancia mas corta
+SELECT*
+FROM place
+WHERE place_id IN(
+	SELECT place_id
+	FROM stay
+	WHERE vehicle_id IN (
+		SELECT vehicle_id
+		WHERE mark='Opel' AND model='Astral'
+		)
+);
+
+
+--26.Para cada pieza, matricula del vehiculo que la ocupa ahora
+
+SELECT*
+FROM vehicle
+WHERE vehicle_id NOT IN(
+	SELECT vehicle_id
+	FROM stay
+	WHERE place_id IN(
+		SELECT place_id
+		FROM place
+		WHERE place_floor=
+		)
+)
+
+--Si la plaza esta vacia, que aparezca la palabra empty
+
+--27.Estancias mas cortas que la media. Supongamos que hoy es 10/10/2018
+
+SELECT AVG(TIMESTAMPDIFF(in_date),IFNULL(out_date,'2018-10-10')))
+FROM stay
+WHERE TIMESTAMPDIFF(MINUTE,in_date,IFNULL(out_date,'2018-10-10'))< (
+	SELECT AVG(TIMESTAMPDIFF(MINUTE,in_date,IFNULL(out_date,'2018-10-10')))
+	FROM stay
+)
+
+--28-Vehiculo con mayor numero de minutos
+--29-Dia con mayor numero de entradas
+--30-Las estancias 9 y 24 son del mismo vehiculo. Minutos que estuvo fuera
+--31-Incremento de precio del dia desde el 01/02/2017 hasta 01/02/2018
+--32-Facturacion diaria (suma de importes cobrados a la salida)
+--33-El vehiculo  0987-BSR  aparca en la primera plaza libre
+--34-Los precios suben a partir de hoy un 2.5%
+
+--Modificar el ultimo registro de precios
+--Insertar un nuevo registro de precios
