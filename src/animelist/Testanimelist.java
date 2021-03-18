@@ -39,8 +39,15 @@ public class Testanimelist {
 							String Genero = input.nextLine();
 							 db.newAnime(name,Genero);
 							break;
+						case 3:
+							System.out.println("Usuario");
+							int id_usuario=input.nextInt();
+							System.out.println("Anime");
+							int id_anime = input.nextInt();
+							db.newAnimeUsuario(id_usuario, id_anime);
+							break;
 						}
-					}while(op1!=3);
+					}while(op1!=4);
 					break;					
 				case 2: 
 					boolean inserted = newUser(db);
@@ -53,7 +60,7 @@ public class Testanimelist {
 				}
 			} while (op != 4);
 		} catch (Exception ex) {
-			System.out.println("Red code You are NOT connected to EMAIL");
+			//System.out.println("Red code You are NOT connected to EMAIL");
 		}
 	}
 	public static int menu() {
@@ -77,9 +84,9 @@ public class Testanimelist {
 		u = db.getUser(name, pass);
 		return u;
 	}
-	public static void insideSystem(animelist db, User user) {// throws Exception
-		System.out.println("Bienvenido " + user);
-		System.out.println("----------------------");
+	public static void insideSystem(animelist db, User user) {
+		System.out.println("Bienvenido " + user+ " a MyAnimeList");
+		//System.out.println("----------------------");
 		//System.out.println("Estos son tus animes para ver:");
 	}
 	public static boolean newUser(animelist db) throws Exception {
@@ -96,8 +103,9 @@ public class Testanimelist {
 		System.out.println("MyAnimeList");
 		System.out.println("..............");
 		System.out.println("1. Ver los Animes.");
-		System.out.println("2. Introducir Nuevos Animes.");
-		System.out.println("3. Salir.");
+		System.out.println("2. Introducir Nuevos Animes a MyAnimeList.");
+		System.out.println("3. Introducir Nuevos Animes al usuario");
+		System.out.println("4. Salir.");
 		op1 = teclado.nextInt();
 		return op1;
 	}

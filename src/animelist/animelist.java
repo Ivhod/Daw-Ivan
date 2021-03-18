@@ -62,4 +62,18 @@ public class animelist extends DataBase {
 			return false;
 		}
 	}
+	
+	public boolean newAnimeUsuario(int id_usuario , int id_anime)  throws Exception {
+		String sql= "insert into usu_ani (id_usuario,id_anime) values ('"+id_usuario+"','"+id_anime+"')";
+		try{
+			this.stm.executeUpdate(sql);
+			return true;
+		}
+		catch(Exception ex) {
+			return false;
+		}
+	}
+	//INSERT INTO `usu_ani` (`usu_ani_id`, `id_usuario`, `id_anime`) VALUES (NULL, '1', '5');
+	
+	
 }
