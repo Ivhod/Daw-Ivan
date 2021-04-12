@@ -1,12 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.StackPane?>
 
-
-<Pane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/16" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.SampleController">
+<Pane fx:id="pane1" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/16" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.SampleController">
    <children>
-      <Pane layoutY="199.0" prefHeight="201.0" prefWidth="388.0">
+      <Pane fx:id="pane2" layoutY="199.0" prefHeight="201.0" prefWidth="388.0">
          <children>
             <Button fx:id="Btq" layoutX="10.0" layoutY="88.0" mnemonicParsing="false" text="Q" />
             <Button fx:id="Btw" layoutX="39.0" layoutY="88.0" mnemonicParsing="false" text="W" />
@@ -14,28 +19,44 @@
             <Button fx:id="Btr" layoutX="105.0" layoutY="88.0" mnemonicParsing="false" text="R" />
             <Button fx:id="Btt" layoutX="140.0" layoutY="88.0" mnemonicParsing="false" text="T" />
             <Button fx:id="Bty" layoutX="171.0" layoutY="88.0" mnemonicParsing="false" text="Y" />
-            <Button layoutX="199.0" layoutY="88.0" mnemonicParsing="false" text="U" />
-            <Button layoutX="231.0" layoutY="88.0" mnemonicParsing="false" text="I" />
-            <Button layoutX="256.0" layoutY="88.0" mnemonicParsing="false" text="O" />
-            <Button layoutX="282.0" layoutY="88.0" mnemonicParsing="false" text="P" />
-            <Button layoutX="2.0" layoutY="125.0" mnemonicParsing="false" text="A" />
-            <Button layoutX="30.0" layoutY="125.0" mnemonicParsing="false" text="S" />
-            <Button layoutX="60.0" layoutY="125.0" mnemonicParsing="false" text="D" />
-            <Button layoutX="95.0" layoutY="125.0" mnemonicParsing="false" text="F" />
-            <Button layoutX="128.0" layoutY="125.0" mnemonicParsing="false" text="G" />
-            <Button layoutX="155.0" layoutY="125.0" mnemonicParsing="false" text="H" />
-            <Button layoutX="188.0" layoutY="125.0" mnemonicParsing="false" text="J" />
-            <Button layoutX="211.0" layoutY="125.0" mnemonicParsing="false" text="K" />
-            <Button layoutX="241.0" layoutY="125.0" mnemonicParsing="false" text="L" />
-            <Button layoutX="269.0" layoutY="125.0" mnemonicParsing="false" text="Ñ" />
-            <Button layoutX="12.0" layoutY="161.0" mnemonicParsing="false" text="Z" />
-            <Button layoutX="75.0" layoutY="161.0" mnemonicParsing="false" text="C" />
-            <Button layoutX="41.0" layoutY="161.0" mnemonicParsing="false" text="X" />
-            <Button layoutX="108.0" layoutY="161.0" mnemonicParsing="false" text="V" />
-            <Button layoutX="140.0" layoutY="161.0" mnemonicParsing="false" text="B" />
-            <Button layoutX="170.0" layoutY="161.0" mnemonicParsing="false" text="N" />
-            <Button layoutX="207.0" layoutY="161.0" mnemonicParsing="false" text="M" />
+            <Button fx:id="Btu" layoutX="199.0" layoutY="88.0" mnemonicParsing="false" text="U" />
+            <Button fx:id="Bti" layoutX="231.0" layoutY="88.0" mnemonicParsing="false" text="I" />
+            <Button fx:id="Bto" layoutX="256.0" layoutY="88.0" mnemonicParsing="false" text="O" />
+            <Button fx:id="Btp" layoutX="282.0" layoutY="88.0" mnemonicParsing="false" text="P" />
+            <Button fx:id="Bta" layoutX="2.0" layoutY="125.0" mnemonicParsing="false" text="A" />
+            <Button fx:id="Bts" layoutX="30.0" layoutY="125.0" mnemonicParsing="false" text="S" />
+            <Button fx:id="Btd" layoutX="60.0" layoutY="125.0" mnemonicParsing="false" text="D" />
+            <Button fx:id="Btf" layoutX="95.0" layoutY="125.0" mnemonicParsing="false" text="F" />
+            <Button fx:id="Btg" layoutX="128.0" layoutY="125.0" mnemonicParsing="false" text="G" />
+            <Button fx:id="Bth" layoutX="155.0" layoutY="125.0" mnemonicParsing="false" text="H" />
+            <Button fx:id="Btj" layoutX="188.0" layoutY="125.0" mnemonicParsing="false" text="J" />
+            <Button fx:id="Btk" layoutX="211.0" layoutY="125.0" mnemonicParsing="false" text="K" />
+            <Button fx:id="Btl" layoutX="241.0" layoutY="125.0" mnemonicParsing="false" text="L" />
+            <Button fx:id="Btñ" layoutX="269.0" layoutY="125.0" mnemonicParsing="false" text="Ñ" />
+            <Button fx:id="Btz" layoutX="12.0" layoutY="161.0" mnemonicParsing="false" text="Z" />
+            <Button fx:id="Btc" layoutX="75.0" layoutY="161.0" mnemonicParsing="false" text="C" />
+            <Button fx:id="Btx" layoutX="41.0" layoutY="161.0" mnemonicParsing="false" text="X" />
+            <Button fx:id="Btv" layoutX="108.0" layoutY="161.0" mnemonicParsing="false" text="V" />
+            <Button fx:id="Btb" layoutX="140.0" layoutY="161.0" mnemonicParsing="false" text="B" />
+            <Button fx:id="Btn" layoutX="170.0" layoutY="161.0" mnemonicParsing="false" text="N" />
+            <Button fx:id="Btm" layoutX="207.0" layoutY="161.0" mnemonicParsing="false" text="M" />
          </children>
       </Pane>
+      <StackPane layoutX="321.0" prefHeight="271.0" prefWidth="279.0">
+         <children>
+            <ImageView fx:id="image1" fitHeight="272.0" fitWidth="281.0" pickOnBounds="true" preserveRatio="true" />
+         </children>
+      </StackPane>
+      <SplitPane dividerPositions="0.5185185185185185" orientation="VERTICAL" prefHeight="272.0" prefWidth="316.0">
+        <items>
+          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0" />
+          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
+               <children>
+                  <Label layoutX="60.0" layoutY="55.0" text="FALLOS =" />
+                  <TextField layoutX="112.0" layoutY="51.0" />
+               </children>
+            </AnchorPane>
+        </items>
+      </SplitPane>
    </children>
 </Pane>
