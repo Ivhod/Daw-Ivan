@@ -13,17 +13,18 @@ import java.util.ResourceBundle;
 
 import javax.print.DocFlavor.URL;
 
-import Modelo.Ahorcado;
+import Modelo.HangMan;
 import Modelo.Dictionary;
 import Modelo.HangMan;
 
 public class SampleController implements Initializable{
 	
-	HangMan hm;//= new Ahorcado(new Dictionary().getRandomWord());//
+	HangMan hm;
 	
 	Dictionary dic;
+	boolean JuegoTerminado = false;
 	@FXML
-    private TextField fallos;
+    private Label fallos;
 
     @FXML
     private Label guiones;
@@ -39,16 +40,17 @@ public class SampleController implements Initializable{
     void accionOn(ActionEvent event) {
     	Button b=(Button)(event.getSource());
     	char letter = b.getText().charAt(0);
+    	b.setDisable(true);
     	if (hm.checkLetter(letter)) {
     		this.guiones.setText(hm.getMask());
     	}
     	else {
     		hm.upFails();
-    		
     		this.fallos.setText(String.valueOf(hm.getFails()));
     	}
     	if(hm.getFails()==6) {
     		this.youloose.setOpacity(1);
+    		JuegoTerminado = true;
     	}
     	else {
     		hm.youWin();
