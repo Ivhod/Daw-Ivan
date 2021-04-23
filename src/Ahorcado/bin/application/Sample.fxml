@@ -11,9 +11,12 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.paint.Color?>
+<?import javafx.scene.paint.LinearGradient?>
+<?import javafx.scene.paint.Stop?>
 <?import javafx.scene.text.Font?>
 
-<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/16" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.SampleController">
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" style="-fx-background-color: FFF0DD;" xmlns="http://javafx.com/javafx/16" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.SampleController">
    <bottom>
       <GridPane fx:id="teclado" BorderPane.alignment="CENTER">
         <columnConstraints>
@@ -193,16 +196,46 @@
    <center>
       <StackPane prefHeight="150.0" prefWidth="200.0" BorderPane.alignment="CENTER">
          <children>
-            <ImageView fx:id="image1" fitHeight="316.0" fitWidth="293.0" pickOnBounds="true" preserveRatio="true">
+            <ImageView fitHeight="262.0" fitWidth="304.0" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@../../fotos/fallo0.png" />
+               </image>
+            </ImageView>
+            <ImageView fx:id="image1" fitHeight="316.0" fitWidth="293.0" pickOnBounds="true" preserveRatio="true" visible="false">
                <image>
                   <Image url="@../../fotos/fallo1.PNG" />
                </image></ImageView>
+            <ImageView fx:id="image2" fitHeight="266.0" fitWidth="281.0" pickOnBounds="true" preserveRatio="true" visible="false">
+               <image>
+                  <Image url="@../../fotos/fallo2.PNG" />
+               </image>
+            </ImageView>
+            <ImageView fx:id="image3" fitHeight="260.0" fitWidth="287.0" pickOnBounds="true" preserveRatio="true" visible="false">
+               <image>
+                  <Image url="@../../fotos/fallo3.PNG" />
+               </image>
+            </ImageView>
+            <ImageView fx:id="image4" fitHeight="274.0" fitWidth="291.0" pickOnBounds="true" preserveRatio="true" visible="false">
+               <image>
+                  <Image url="@../../fotos/fallo4.PNG" />
+               </image>
+            </ImageView>
+            <ImageView fx:id="image5" fitHeight="273.0" fitWidth="281.0" pickOnBounds="true" preserveRatio="true" visible="false">
+               <image>
+                  <Image url="@../../fotos/fallo5.PNG" />
+               </image>
+            </ImageView>
+            <ImageView fx:id="image6" fitHeight="278.0" fitWidth="284.0" pickOnBounds="true" preserveRatio="true" visible="false">
+               <image>
+                  <Image url="@../../fotos/fallo6.PNG" />
+               </image>
+            </ImageView>
             <Label fx:id="youwin" alignment="CENTER" opacity="0.0" style="-fx-font-weight: bold; -fx-font-family: Comic Sans MS;" text="YOU WIN" StackPane.alignment="BOTTOM_RIGHT">
                <font>
                   <Font size="55.0" />
                </font>
             </Label>
-            <Label fx:id="youloose" opacity="0.0" style="-fx-text-alignment: left; -fx-font-family: Comic Sans MS; -fx-font-weight: bold;" text="YOU LOOSE" StackPane.alignment="BOTTOM_RIGHT">
+            <Label fx:id="youloose" opacity="0.0" style="-fx-text-alignment: left; -fx-font-family: Comic Sans MS; -fx-font-weight: bold;" text="YOU LOSE" StackPane.alignment="BOTTOM_RIGHT">
                <font>
                   <Font size="55.0" />
                </font>
@@ -211,10 +244,26 @@
       </StackPane>
    </center>
    <top>
-      <Label text="Ahorcado" BorderPane.alignment="CENTER">
+      <Label style="-fx-font-weight: bold;" text="Ahorcado" BorderPane.alignment="CENTER">
          <font>
             <Font size="35.0" />
          </font>
+         <textFill>
+            <LinearGradient endX="1.0" endY="1.0">
+               <stops>
+                  <Stop>
+                     <color>
+                        <Color />
+                     </color>
+                  </Stop>
+                  <Stop offset="1.0">
+                     <color>
+                        <Color green="0.5098684430122375" blue="0.9868420958518982" />
+                     </color>
+                  </Stop>
+               </stops>
+            </LinearGradient>
+         </textFill>
       </Label>
    </top>
 </BorderPane>

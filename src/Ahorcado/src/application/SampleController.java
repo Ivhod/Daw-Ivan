@@ -68,7 +68,33 @@ public class SampleController implements Initializable {
 		} else {
 			hm.upFails();
 			this.fallos.setText(String.valueOf(hm.getFails()));
-			if (hm.getFails() == 6) {
+//			if (hm.getFails() == 6) {
+//				this.youloose.setOpacity(1);
+//				
+//			}
+			switch(hm.getFails()) {
+			case 1:
+				this.image1.setVisible(true);
+				break;
+			case 2:
+				this.image2.setVisible(true);
+				this.image1.setVisible(false);
+				break;
+			case 3:
+				this.image3.setVisible(true);
+				this.image2.setVisible(false);
+				break;
+			case 4:
+				this.image4.setVisible(true);
+				this.image3.setVisible(false);
+				break;
+			case 5:
+				this.image5.setVisible(true);
+				this.image4.setVisible(false);
+				break;
+			case 6:
+				this.image6.setVisible(true);
+				this.image5.setVisible(false);
 				this.youloose.setOpacity(1);
 				this.teclado.setDisable(true);
 			}
