@@ -1,6 +1,5 @@
 package application;
 
-
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -21,48 +20,63 @@ import Modelo.HangMan;
 import Modelo.Dictionary;
 import Modelo.HangMan;
 
-public class SampleController implements Initializable{
-	
+public class SampleController implements Initializable {
+
 	HangMan hm;
 	Dictionary dic;
 	@FXML
-    private Label fallos;
+	private Label fallos;
+
+	@FXML
+	private GridPane teclado;
+
+	@FXML
+	private Label guiones;
+	@FXML
+	private Label youwin;
+	@FXML
+	private Label youloose;
+
+	@FXML
+	private ImageView image1;
+	
+	@FXML
+    private ImageView image2;
 
     @FXML
-    private GridPane teclado;
+    private ImageView image3;
 
     @FXML
-    private Label guiones;
-    @FXML
-    private Label youwin;
-    @FXML
-    private Label youloose;
+    private ImageView image4;
 
     @FXML
-    private ImageView image1;
-
+    private ImageView image5;
 
     @FXML
-    void accionOn(ActionEvent event) {
-    	Button b=(Button)(event.getSource());
-    	char letter = b.getText().charAt(0);
-    	if (hm.checkLetter(letter)) {
-    		this.guiones.setText(hm.getMask());
-    		if(hm.youWin()) {
-    			this.youwin.setOpacity(1);
-        		this.teclado.setDisable(true);
-    		}
-    	}else {
-        		hm.upFails();
-        		this.fallos.setText(String.valueOf(hm.getFails()));
-        		if(hm.getFails()==6) {
-        			this.youloose.setOpacity(1);
-        			this.teclado.setDisable(true);
-        	}
-    	}
-    	 	b.setDisable(true);
-      
-    }
+    private ImageView image6;
+
+	@FXML
+	void accionOn(ActionEvent event) {
+		Button b = (Button) (event.getSource());
+		char letter = b.getText().charAt(0);
+		if (hm.checkLetter(letter)) {
+			this.guiones.setText(hm.getMask());
+			if (hm.youWin()) {
+				this.youwin.setOpacity(1);
+				this.teclado.setDisable(true);
+			}
+		} else {
+			hm.upFails();
+			this.fallos.setText(String.valueOf(hm.getFails()));
+			if (hm.getFails() == 6) {
+				this.youloose.setOpacity(1);
+				this.teclado.setDisable(true);
+			}
+		}
+		b.setDisable(true);
+
+	}
+
 	@Override
 	public void initialize(java.net.URL arg0, ResourceBundle arg1) {
 		// TODO Auto-generated method stub
@@ -70,10 +84,7 @@ public class SampleController implements Initializable{
 		hm = new HangMan(dic.getRandomWord());
 		this.guiones.setText(hm.getMask());
 		this.fallos.setText(String.valueOf(hm.getFails()));
-		
-			
-		
-	
+
 	}
 
 }
