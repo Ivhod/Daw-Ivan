@@ -8,15 +8,12 @@ import Modelo.anime;
 import Modelo.animelist;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 
-public class SampleController implements Initializable {
-	User user;
+public class SampleController {
 	anime ani;
-	animelist aList;
 	DataBase data;
 	@FXML
     private TextField name;
@@ -25,17 +22,26 @@ public class SampleController implements Initializable {
     private PasswordField pass;
 	@FXML
     void login(ActionEvent event) throws Exception {
-		Button l = (Button)(event.getSource());
-		aList.getUser(name, pass);
-    }
+		animelist aList = new animelist();
+		User u;
+		String nombre = this.name.getText();
+		String password = this.pass.getText();
+		u= aList.getUser(nombre, password);
+	}
+
+    
 
     @FXML
     void register(ActionEvent event) throws Exception {
-    	Button r = (Button)(event.getSource());
+    	animelist aList = new animelist();
+    	
+    	String name = this.name.getText();
+		String pass = this.pass.getText();
     	aList.newUser(name, pass);
-
     }
-    public void initialize(java.net.URL arg0, ResourceBundle arg1){
+
+    
+    public void initialize(java.net.URL arg0, ResourceBundle arg1) {
 		// TODO Auto-generated method stub
     	try {
 			data = new DataBase();
@@ -43,5 +49,6 @@ public class SampleController implements Initializable {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	
     }
 }
