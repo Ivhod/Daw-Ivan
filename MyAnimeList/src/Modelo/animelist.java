@@ -5,6 +5,8 @@ import java.sql.Statement;
 import java.util.ArrayList;
 
 import Modelo.User;
+import javafx.scene.control.PasswordField;
+import javafx.scene.control.TextField;
 
 public class animelist extends DataBase {
 	Statement stm;
@@ -13,7 +15,7 @@ public class animelist extends DataBase {
 	}
 	
 	
-	public User getUser(String name, String pass) throws Exception {
+	public User getUser(TextField name, PasswordField pass) throws Exception {
 		User u = null;
 		String sql = "Select * from usuarios where usuario ='" + name + "' and pass = '" + pass + "'";
 
@@ -22,7 +24,7 @@ public class animelist extends DataBase {
 			u = new User(result.getInt("id_usuario"), result.getString("usuario"), result.getString("Pass"));
 		return u;
 	}
-	public boolean newUser(String name, String pass) throws Exception{
+	public boolean newUser(TextField name, PasswordField pass) throws Exception{
 		String sql = "Insert into usuarios(usuario,pass) values ('"+name+"','"+pass+"')";
 		try {
 		this.stm.executeUpdate(sql);
