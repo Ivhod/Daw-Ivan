@@ -4,6 +4,10 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
 
+import Modelo.User;
+import javafx.scene.control.PasswordField;
+import javafx.scene.control.TextField;
+
 public class animelist extends DataBase {
 	Statement stm;
 	public animelist() throws Exception {
@@ -11,9 +15,9 @@ public class animelist extends DataBase {
 	}
 	
 	
-	public User getUser(String name, String pass) throws Exception {
+	public User getUser(String nombre, String password) throws Exception {
 		User u = null;
-		String sql = "Select * from usuarios where usuario ='" + name + "' and pass = '" + pass + "'";
+		String sql = "Select * from usuarios where usuario ='" + nombre + "' and pass = '" + password + "'";
 
 		ResultSet result = this.stm.executeQuery(sql);
 		if (result.next())
