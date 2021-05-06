@@ -24,6 +24,15 @@ public class animelist extends DataBase {
 			u = new User(result.getInt("id_usuario"), result.getString("usuario"), result.getString("Pass"));
 		return u;
 	}
+	public boolean checkUser(String nombre) throws Exception {
+		String sql = "Select usuario from usuarios where usuario ='" + nombre +"'";
+
+		ResultSet result = this.stm.executeQuery(sql);
+		if (result.next())
+			return true;
+			return false;
+			
+	}
 	public boolean newUser(String name, String pass) throws Exception{
 		String sql = "Insert into usuarios(usuario,pass) values ('"+name+"','"+pass+"')";
 		try {

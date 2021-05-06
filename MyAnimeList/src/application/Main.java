@@ -23,6 +23,8 @@ public class Main extends Application {
 			primaryStage.setScene(scene);
 			primaryStage.show();
 			
+			
+			
 		} catch(Exception e) {
 			e.printStackTrace();
 		}
@@ -31,10 +33,9 @@ public class Main extends Application {
 		FXMLLoader loader = new FXMLLoader();
 		loader.setLocation(Main.class.getResource("Anime.fxml"));
 		BorderPane Anime = loader.load();
-		
 		Stage addLoginStage = new Stage();
 		addLoginStage.setTitle("MyAnimeList");
-		addLoginStage.initModality(Modality.WINDOW_MODAL);
+		addLoginStage.initModality(Modality.APPLICATION_MODAL);
 		addLoginStage.initOwner(primaryStage);
 		
 		Scene scene = new Scene(Anime);

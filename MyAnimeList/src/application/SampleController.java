@@ -27,6 +27,8 @@ public class SampleController implements Initializable {
     private Label error;
 	@FXML
     private Label login;
+	@FXML
+    private Label register;
 
     @FXML
     private PasswordField pass;
@@ -52,11 +54,14 @@ public class SampleController implements Initializable {
     	String name = this.name.getText();
 		String pass = this.pass.getText();
 //    	aList.newUser(name, pass);
-    	if(aList.newUser(name, pass)) {
+		if(!aList.checkUser(name)){
+			aList.newUser(name, pass);
 			login.setOpacity(1);
     		error.setOpacity(0);
     	}else
-			System.out.println("Problemas al registrarse");
+			register.setOpacity(1);
+			login.setOpacity(0);
+			error.setOpacity(0);
 	
     }
 
