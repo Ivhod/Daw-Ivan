@@ -6,8 +6,7 @@
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.Pane?>
 
-
-<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/16" xmlns:fx="http://javafx.com/fxml/1">
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/16" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.AnimeController">
    <top>
       <ImageView fitHeight="74.0" fitWidth="489.0" pickOnBounds="true" preserveRatio="true" BorderPane.alignment="CENTER">
          <image>
@@ -19,6 +18,33 @@
       </ImageView>
    </top>
    <center>
-      <Pane prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER" />
+      <Pane prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+         <children>
+            <ImageView fx:id="onepiece" fitHeight="224.0" fitWidth="172.0" layoutX="14.0" layoutY="7.0" onMouseClicked="#clickOnepiece" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@../../fotos/onepiece.png" />
+               </image>
+            </ImageView>
+            <ImageView fx:id="naruto" fitHeight="224.0" fitWidth="174.0" layoutX="315.0" layoutY="7.0" onMouseClicked="#clickNaruto" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@../../fotos/naruto.png" />
+               </image>
+            </ImageView>
+            <ImageView fx:id="dragonball" fitHeight="224.0" fitWidth="174.0" layoutX="583.0" layoutY="32.0" onMouseClicked="#clickDragon" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@../../fotos/dragonball.png" />
+               </image>
+            </ImageView>
+            <ImageView fx:id="tokyo" fitHeight="224.0" fitWidth="174.0" layoutX="161.0" layoutY="258.0" onMouseClicked="#clickTokyo" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@../../fotos/tokyo.png" />
+               </image>
+            </ImageView>
+            <ImageView fx:id="fairy" fitHeight="224.0" fitWidth="174.0" layoutX="457.0" layoutY="258.0" onMouseClicked="#clickFairy" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@../../fotos/fairy.png" />
+               </image>
+            </ImageView>
+         </children></Pane>
    </center>
 </BorderPane>

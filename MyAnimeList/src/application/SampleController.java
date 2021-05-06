@@ -43,6 +43,7 @@ public class SampleController implements Initializable {
 		if (u != null) {
 			insideSystem(aList, u);
 			Main.showLoginStage();
+			
 		} else
 			error.setOpacity(1);
 			login.setOpacity(0);

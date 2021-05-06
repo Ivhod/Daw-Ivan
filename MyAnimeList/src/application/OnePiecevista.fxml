@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.text.Text?>
+<?import javafx.scene.text.TextFlow?>
+
+<BorderPane prefHeight="600.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/16" xmlns:fx="http://javafx.com/fxml/1">
+   <top>
+      <ImageView fitHeight="74.0" fitWidth="489.0" pickOnBounds="true" preserveRatio="true" BorderPane.alignment="CENTER">
+         <BorderPane.margin>
+            <Insets top="10.0" />
+         </BorderPane.margin>
+         <image>
+            <Image url="@../../fotos/MyAnimeList.png" />
+         </image>
+      </ImageView>
+   </top>
+   <center>
+      <Pane prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+         <children>
+            <ImageView fitHeight="338.0" fitWidth="218.0" layoutX="8.0" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@../../fotos/onepiece.png" />
+               </image>
+            </ImageView>
+            <Label layoutX="241.0" layoutY="25.0" text="Sinopsis">
+               <font>
+                  <Font name="System Bold" size="20.0" />
+               </font>
+            </Label>
+            <TextFlow layoutX="250.0" layoutY="55.0" prefHeight="266.0" prefWidth="442.0">
+               <children>
+                  <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Una historia épica de piratas, donde narra la historia de &quot;Monkey D. Luffy&quot; quien cuado tenia 7 años, comió accidentalmente una &quot;Akuma no mi&quot;(Futa del diablo) la cual le dio poderes de goma. Por otra parte &quot;Gol D. Roger&quot; conocido como &quot;El rey de los Piratas&quot; quien fuera ejecutado por la Marine, habló antes de morir, acerca de su famoso tesoro &quot;One Piece&quot; escondido en la &quot;Gran line&quot;. Esta noticia desato la gran era de la piratas lanzando a incontables piratas a ese lugar, en busca de &quot;One Piece&quot; el tesoro perdido. Diez años después, Luffy inspirado en &quot;Gol D. Roger&quot; y un pirata de nombre Akagami no Shanks (Shanks el pelirrojo) se convierte en pirata deseando ser el próximo &quot;Rey de los Piratas&quot; y zarpar para conocer amigos y tener aventuras con ellos, teniendo como meta encontrar el &quot;One Piece&quot;.">
+                     <font>
+                        <Font size="15.0" />
+                     </font>
+                  </Text>
+               </children>
+            </TextFlow>
+            <Label layoutX="22.0" layoutY="340.0" text="Generos:">
+               <font>
+                  <Font name="System Bold" size="14.0" />
+               </font>
+            </Label>
+            <Label layoutX="89.0" layoutY="342.0" text="Shounen, Accion,Fantasia">
+               <font>
+                  <Font size="13.0" />
+               </font>
+            </Label>
+            <Label layoutX="26.0" layoutY="372.0" text="Estudio: ">
+               <font>
+                  <Font name="System Bold" size="14.0" />
+               </font>
+            </Label>
+            <Label layoutX="89.0" layoutY="374.0" text="Toei Animation">
+               <font>
+                  <Font size="13.0" />
+               </font>
+            </Label>
+         </children>
+      </Pane>
+   </center>
+</BorderPane>
