@@ -13,6 +13,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
@@ -22,6 +23,10 @@ public class SampleController implements Initializable {
 	DataBase data;
 	@FXML
     private TextField name;
+	@FXML
+    private Label error;
+	@FXML
+    private Label login;
 
     @FXML
     private PasswordField pass;
@@ -32,18 +37,33 @@ public class SampleController implements Initializable {
 		String name = this.name.getText();
 		String pass = this.pass.getText();
 		u= aList.getUser(name, pass);
-		Main.showLoginStage();
 		
+		if (u != null) {
+			insideSystem(aList, u);
+			Main.showLoginStage();
+		} else
+			error.setOpacity(1);
+			login.setOpacity(0);
     }
-
-    @FXML
+	
+	@FXML
     void register(ActionEvent event) throws Exception {
     	animelist aList = new animelist();
     	String name = this.name.getText();
 		String pass = this.pass.getText();
-    	aList.newUser(name, pass);
-
+//    	aList.newUser(name, pass);
+    	if(aList.newUser(name, pass)) {
+			login.setOpacity(1);
+    		error.setOpacity(0);
+    	}else
+			System.out.println("Problemas al registrarse");
+	
     }
+
+	private void insideSystem(animelist aList, User u) {
+		// TODO Auto-generated method stub
+		
+	}
     public void initialize(java.net.URL arg0, ResourceBundle arg1){
 		// TODO Auto-generated method stub
     	try {
