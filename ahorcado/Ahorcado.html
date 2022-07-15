@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script type="text/javascript" src="Ahorcado.js"></script>
+    <link rel="stylesheet" href="ahorcado.css">
+    <title>Juego del Ahorcado</title>
+</head>
+
+<body class="fondo">
+    
+    <div class="container">
+        <h1 class="titulo" id="titulo">Ahorcado</h1>
+        <div class="flex-row no-wrap">
+            <h2 class="palabra" id="palabra"></h2>
+            
+        </div>
+        <p id="Win_Loose"></p>
+        <img src="imagenes/ganaste.gif" style="display: none" id="fotoGanar">
+        <img src="imagenes/perdiste.gif" style="display: none" id="fotoPerder">
+
+        <div class="col" id="vidas" hidden="true">
+            <h3>Vidas: <span id="intentos"></span></h3>
+          </div>
+        <select id="opciones" name="opciones" class="select">
+            <option value="deportes">Deportes</option>
+            <option value="informatica">Informatica</option>
+            <option value="flores">Flores</option>
+        </select>
+        
+        <input type="button" value="Jugar" class="boton" onclick="inicio()" id="botonElegir"><br>
+        <input type="button" value="Reiniciar" class="boton" onclick="reiniciar()" id="botonReiniciar" style="display:none">
+        
+
+    <div class="flex-row">
+        <div class="col">
+          <div class="flex-row" id="abcdario">
+          </div>
+        </div>
+        <div class="col"></div>
+      </div>
+
+
+      </div>
+</body>
+
+</html>
